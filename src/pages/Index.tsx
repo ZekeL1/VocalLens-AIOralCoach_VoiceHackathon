@@ -22,6 +22,8 @@ const Index = () => {
     audioBuffers,
     audioDuration,
     startASR,
+    pauseASR,
+    resumeASR,
     stopASR,
     resetTranscript,
   } = useASR();
@@ -59,12 +61,13 @@ const Index = () => {
 
     // Toggle pause/resume when already recording
     if (!mediaStream) return;
-    const next = !isPaused;
-    mediaStream.getAudioTracks().forEach((t) => {
-      t.enabled = next;
-    });
+    if (isPaused) {
+      resumeASR();
+    } else {
+      pauseASR();
+    }
     setIsPaused(!isPaused);
-  }, [isRecording, isPaused, mediaStream, startASR]);
+  }, [isRecording, isPaused, mediaStream, startASR, pauseASR, resumeASR]);
 
   return (
     <div className="relative min-h-screen bg-background grid-bg flex flex-col">
@@ -94,7 +97,7 @@ const Index = () => {
           isRecording={isRecording}
         />
         <AnalysisDashboard accuracy={hasSpeech ? analysis.accuracy : null} hint={hint} />
-        <Waveform isRecording={isRecording} mediaStream={mediaStream} />
+        <Waveform isRecording={isRecording} isPaused={isPaused} mediaStream={mediaStream} />
         <div className="flex flex-col items-center gap-3">
           <RecordButton
             isRecording={isRecording}

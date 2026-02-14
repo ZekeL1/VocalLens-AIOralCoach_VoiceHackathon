@@ -6,10 +6,11 @@ import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
 
 interface WaveformProps {
   isRecording: boolean;
+  isPaused: boolean;
   mediaStream: MediaStream | null;
 }
 
-const Waveform = ({ isRecording, mediaStream }: WaveformProps) => {
+const Waveform = ({ isRecording, isPaused, mediaStream }: WaveformProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const waveRef = useRef<WaveSurfer | null>(null);
   const recordRef = useRef<any>(null);
@@ -57,6 +58,18 @@ const Waveform = ({ isRecording, mediaStream }: WaveformProps) => {
       waveRef.current = null;
     };
   }, [isRecording, mediaStream]);
+
+  useEffect(() => {
+    if (recordRef.current && recordRef.current.wavesurfer) {
+      if (isPaused) {
+        recordRef.current.pauseRecording?.();
+        recordRef.current.wavesurfer.setMuted(true);
+      } else {
+        recordRef.current.resumeRecording?.();
+        recordRef.current.wavesurfer.setMuted(false);
+      }
+    }
+  }, [isPaused]);
 
   return (
     <motion.div

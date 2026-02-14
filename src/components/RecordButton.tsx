@@ -1,4 +1,4 @@
-import { Mic, Square } from "lucide-react";
+import { Mic, Square, Play } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface RecordButtonProps {
@@ -22,7 +22,9 @@ const RecordButton = ({ isRecording, isPaused, onToggle }: RecordButtonProps) =>
           transition-all duration-300 cursor-pointer
           border-2
           ${isRecording
-            ? "bg-primary/20 border-primary neon-glow-strong animate-pulse-neon"
+            ? isPaused
+              ? "bg-primary/10 border-primary neon-glow-strong"
+              : "bg-primary/20 border-primary neon-glow-strong animate-pulse-neon"
             : "bg-secondary border-border hover:border-primary/50 hover:neon-glow"
           }
         `}
@@ -37,7 +39,11 @@ const RecordButton = ({ isRecording, isPaused, onToggle }: RecordButtonProps) =>
         )}
 
         {isRecording ? (
-          <Square className="w-7 h-7 text-primary fill-primary" />
+          isPaused ? (
+            <Play className="w-7 h-7 text-primary" />
+          ) : (
+            <Square className="w-7 h-7 text-primary fill-primary" />
+          )
         ) : (
           <Mic className="w-8 h-8 text-primary" />
         )}

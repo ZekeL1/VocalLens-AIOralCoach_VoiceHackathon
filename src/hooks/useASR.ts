@@ -15,6 +15,8 @@ export interface UseASRReturn {
   audioBuffers: Float32Array[];
   audioDuration: number;
   startASR: (stream: MediaStream) => Promise<void>;
+  pauseASR: () => void;
+  resumeASR: () => void;
   stopASR: () => void;
   resetTranscript: () => void;
 }
@@ -38,6 +40,7 @@ export function useASR(): UseASRReturn {
   const audioBuffersRef = useRef<Float32Array[]>([]);
   const [audioBuffers, setAudioBuffers] = useState<Float32Array[]>([]);
   const [audioDuration, setAudioDuration] = useState(0);
+  const pausedRef = useRef(false);
 
   const fetchToken = useCallback(async (): Promise<string> => {
     const { data, error } = await supabase.functions.invoke("get-asr-token");
@@ -104,6 +107,7 @@ export function useASR(): UseASRReturn {
       processorRef.current = processor;
 
       processor.onaudioprocess = (e) => {
+        if (pausedRef.current) return;
         const input = e.inputBuffer.getChannelData(0);
         const copy = new Float32Array(input.length);
         copy.set(input);
@@ -150,6 +154,20 @@ export function useASR(): UseASRReturn {
     setIsConnected(false);
   }, []);
 
+  const pauseASR = useCallback(() => {
+    pausedRef.current = true;
+    if (audioCtxRef.current && audioCtxRef.current.state === "running") {
+      audioCtxRef.current.suspend();
+    }
+  }, []);
+
+  const resumeASR = useCallback(() => {
+    pausedRef.current = false;
+    if (audioCtxRef.current && audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume();
+    }
+  }, []);
+
   const resetTranscript = useCallback(() => {
     setTranscript("");
     setPartialTranscript("");
@@ -169,6 +187,8 @@ export function useASR(): UseASRReturn {
     audioBuffers,
     audioDuration,
     startASR,
+    pauseASR,
+    resumeASR,
     stopASR,
     resetTranscript,
   };
