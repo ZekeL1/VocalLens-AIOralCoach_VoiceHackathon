@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 interface TranscriptionDisplayProps {
   transcript: string;
   partialTranscript: string;
+  tokens: { word: string; status: "match" | "miss" | "extra" }[];
   isConnected: boolean;
   isRecording: boolean;
 }
@@ -10,10 +11,11 @@ interface TranscriptionDisplayProps {
 const TranscriptionDisplay = ({
   transcript,
   partialTranscript,
+  tokens,
   isConnected,
   isRecording,
 }: TranscriptionDisplayProps) => {
-  const hasContent = transcript || partialTranscript;
+  const hasContent = tokens.length > 0 || partialTranscript;
 
   return (
     <motion.div
@@ -42,10 +44,24 @@ const TranscriptionDisplay = ({
                 animate={{ opacity: 1 }}
                 className="text-lg leading-relaxed text-card-foreground font-light tracking-wide"
               >
-                {transcript}
+                {tokens.map((t, idx) => (
+                  <span
+                    key={idx}
+                    className={
+                      t.status === "match"
+                        ? "text-primary font-medium"
+                        : t.status === "miss"
+                        ? "text-destructive font-semibold"
+                        : "text-muted-foreground"
+                    }
+                  >
+                    {t.word}
+                    {idx < tokens.length - 1 ? " " : ""}
+                  </span>
+                ))}
                 {partialTranscript && (
                   <span className="text-muted-foreground italic">
-                    {transcript ? " " : ""}
+                    {" "}
                     {partialTranscript}
                   </span>
                 )}

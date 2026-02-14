@@ -5,6 +5,9 @@ import Waveform from "@/components/Waveform";
 import RecordButton from "@/components/RecordButton";
 import TranscriptionDisplay from "@/components/TranscriptionDisplay";
 import { useASR } from "@/hooks/useASR";
+import AnalysisDashboard from "@/components/AnalysisDashboard";
+import { diffWords, pickPhonemeHint } from "@/lib/scoring";
+import { sampleText } from "@/components/ReferenceText";
 
 const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -21,6 +24,12 @@ const Index = () => {
     stopASR,
     resetTranscript,
   } = useASR();
+
+  const hasSpeech = transcript.trim().length > 0 || partialTranscript.trim().length > 0;
+  const analysis = hasSpeech
+    ? diffWords(sampleText, transcript)
+    : { tokens: [], accuracy: 0, mismatches: [] };
+  const hint = hasSpeech ? pickPhonemeHint(analysis.mismatches) : null;
 
   const toggleRecording = useCallback(async () => {
     if (isRecording) {
@@ -62,7 +71,7 @@ const Index = () => {
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-primary neon-glow" />
             <h1 className="font-display text-sm tracking-[0.3em] uppercase text-primary neon-text">
-              ECE Speak
+              VocalLens
             </h1>
           </div>
           <span className="font-display text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
@@ -77,9 +86,11 @@ const Index = () => {
         <TranscriptionDisplay
           transcript={transcript}
           partialTranscript={partialTranscript}
+          tokens={analysis.tokens}
           isConnected={isConnected}
           isRecording={isRecording}
         />
+        <AnalysisDashboard accuracy={hasSpeech ? analysis.accuracy : null} hint={hint} />
         <Waveform isRecording={isRecording} mediaStream={mediaStream} />
         <RecordButton isRecording={isRecording} onToggle={toggleRecording} />
       </main>
