@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import ReferenceText from "@/components/ReferenceText";
 import Waveform from "@/components/Waveform";
@@ -17,6 +17,7 @@ const Index = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const hasSpokenPromptRef = useRef(false);
 
   const {
     transcript,
@@ -82,6 +83,42 @@ const Index = () => {
     }
     setIsPaused(!isPaused);
   }, [isRecording, isPaused, mediaStream, startASR, pauseASR, resumeASR]);
+
+  useEffect(() => {
+    const speakPrompt = () => {
+      if (hasSpokenPromptRef.current) return;
+      if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(
+          "Hello. Please read the sentence above."
+        );
+        utterance.lang = "en-US";
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        utterance.onstart = () => {
+          hasSpokenPromptRef.current = true;
+        };
+        utterance.onend = () => {
+          hasSpokenPromptRef.current = true;
+        };
+        window.speechSynthesis.speak(utterance);
+      } catch {
+        // Ignore TTS runtime errors and keep the page functional.
+      }
+    };
+
+    const timer = window.setTimeout(speakPrompt, 500);
+    const retryOnFirstInteraction = () => speakPrompt();
+    window.addEventListener("pointerdown", retryOnFirstInteraction, { once: true });
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("pointerdown", retryOnFirstInteraction);
+    };
+  }, []);
 
   return (
     <div
