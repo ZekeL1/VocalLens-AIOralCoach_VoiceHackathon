@@ -49,10 +49,10 @@ const phonemeRules: Array<{
   hyp: RegExp;
   tip: string;
 }> = [
-  { ref: /^th/, hyp: /^d/, tip: "检测到 /ð/ 发音异常，请注意舌尖轻触上齿背。" },
-  { ref: /^v/, hyp: /^w/, tip: "可能把 /v/ 读成 /w/，上齿轻触下唇并振动声带。" },
-  { ref: /^l/, hyp: /^r/, tip: "注意 /l/ 需舌尖抵上颚前部，避免卷舌成 /r/。" },
-  { ref: /ing$/, hyp: /in$/, tip: "结尾 /ŋ/ 漏气成 /n/，舌根上抬封闭软腭。" },
+  { ref: /^th/, hyp: /^d/, tip: "Possible /ð/ → /d/ substitution; place tongue lightly behind upper teeth." },
+  { ref: /^v/, hyp: /^w/, tip: "Possible /v/ → /w/; touch upper teeth to lower lip and voice the sound." },
+  { ref: /^l/, hyp: /^r/, tip: "Possible /l/ → /r/; keep tongue tip on alveolar ridge to avoid retroflex /r/." },
+  { ref: /ing$/, hyp: /in$/, tip: "Possible /ŋ/ → /n/; lift tongue back to seal the soft palate for /ŋ/." },
 ];
 
 export function pickPhonemeHint(mismatches: Array<{ ref?: string; hyp?: string }>) {

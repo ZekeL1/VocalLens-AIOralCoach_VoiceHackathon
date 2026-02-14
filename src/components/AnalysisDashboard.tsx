@@ -19,7 +19,7 @@ const AnalysisDashboard = ({ accuracy, hint }: AnalysisDashboardProps) => {
           Phoneme Coach
         </p>
         <p className="mt-1 text-sm text-card-foreground">
-          {hint || "等待音频输入..."}
+          {hint || "Waiting for audio input..."}
         </p>
       </div>
     </div>

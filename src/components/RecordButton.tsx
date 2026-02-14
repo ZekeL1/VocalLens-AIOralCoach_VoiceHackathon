@@ -3,10 +3,11 @@ import { motion } from "framer-motion";
 
 interface RecordButtonProps {
   isRecording: boolean;
+  isPaused: boolean;
   onToggle: () => void;
 }
 
-const RecordButton = ({ isRecording, onToggle }: RecordButtonProps) => {
+const RecordButton = ({ isRecording, isPaused, onToggle }: RecordButtonProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -44,7 +45,9 @@ const RecordButton = ({ isRecording, onToggle }: RecordButtonProps) => {
 
       <span className="font-display text-xs tracking-[0.25em] uppercase text-muted-foreground">
         {isRecording ? (
-          <span className="text-primary neon-text">Recording...</span>
+          <span className="text-primary neon-text">
+            {isPaused ? "Resume" : "Pause"}
+          </span>
         ) : (
           "Tap to Record"
         )}

@@ -11,6 +11,7 @@ import { sampleText } from "@/components/ReferenceText";
 
 const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
@@ -32,15 +33,8 @@ const Index = () => {
   const hint = hasSpeech ? pickPhonemeHint(analysis.mismatches) : null;
 
   const toggleRecording = useCallback(async () => {
-    if (isRecording) {
-      // Stop
-      stopASR();
-      mediaRecorderRef.current?.stop();
-      mediaStream?.getTracks().forEach((t) => t.stop());
-      setMediaStream(null);
-      setIsRecording(false);
-    } else {
-      // Start
+    if (!isRecording) {
+      // Start recording
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: {
@@ -55,13 +49,22 @@ const Index = () => {
         recorder.start();
         setMediaStream(stream);
         setIsRecording(true);
-        // Start ASR
+        setIsPaused(false);
         await startASR(stream);
       } catch (err) {
         console.error("Mic access denied:", err);
       }
+      return;
     }
-  }, [isRecording, mediaStream, startASR, stopASR]);
+
+    // Toggle pause/resume when already recording
+    if (!mediaStream) return;
+    const next = !isPaused;
+    mediaStream.getAudioTracks().forEach((t) => {
+      t.enabled = next;
+    });
+    setIsPaused(!isPaused);
+  }, [isRecording, isPaused, mediaStream, startASR]);
 
   return (
     <div className="relative min-h-screen bg-background grid-bg flex flex-col">
@@ -92,7 +95,43 @@ const Index = () => {
         />
         <AnalysisDashboard accuracy={hasSpeech ? analysis.accuracy : null} hint={hint} />
         <Waveform isRecording={isRecording} mediaStream={mediaStream} />
-        <RecordButton isRecording={isRecording} onToggle={toggleRecording} />
+        <div className="flex flex-col items-center gap-3">
+          <RecordButton
+            isRecording={isRecording}
+            isPaused={isPaused}
+            onToggle={toggleRecording}
+          />
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                stopASR();
+                mediaRecorderRef.current?.stop();
+                mediaStream?.getTracks().forEach((t) => t.stop());
+                setMediaStream(null);
+                setIsRecording(false);
+                setIsPaused(false);
+                resetTranscript();
+              }}
+              className="px-3 py-2 rounded-md border border-border bg-card/70 text-sm hover:border-primary"
+            >
+              Reset
+            </button>
+            <button
+              onClick={() => {
+                // Placeholder for future history integration
+                stopASR();
+                mediaRecorderRef.current?.stop();
+                mediaStream?.getTracks().forEach((t) => t.stop());
+                setMediaStream(null);
+                setIsRecording(false);
+                setIsPaused(false);
+              }}
+              className="px-3 py-2 rounded-md border border-border bg-card/70 text-sm hover:border-primary"
+            >
+              Finish
+            </button>
+          </div>
+        </div>
       </main>
 
       {/* Decorative bottom line */}
