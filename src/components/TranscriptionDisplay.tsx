@@ -15,7 +15,7 @@ const TranscriptionDisplay = ({
   isConnected,
   isRecording,
 }: TranscriptionDisplayProps) => {
-  const hasContent = tokens.length > 0 || partialTranscript;
+  const hasContent = tokens.length > 0 || partialTranscript || transcript;
 
   return (
     <motion.div

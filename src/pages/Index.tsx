@@ -32,8 +32,9 @@ const Index = () => {
   } = useASR();
 
   const hasSpeech = transcript.trim().length > 0 || partialTranscript.trim().length > 0;
+  const liveHypothesis = `${transcript} ${partialTranscript}`.trim();
   const analysis = hasSpeech
-    ? diffWords(sampleText, transcript)
+    ? diffWords(sampleText, liveHypothesis)
     : { tokens: [], accuracy: 0, mismatches: [] };
   const hint = hasSpeech ? pickPhonemeHint(analysis.mismatches) : null;
 

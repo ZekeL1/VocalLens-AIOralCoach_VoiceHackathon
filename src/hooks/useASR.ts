@@ -57,6 +57,7 @@ export function useASR(): UseASRReturn {
 
   const audioBuffersRef = useRef<Float32Array[]>([]);
   const transcriptRef = useRef("");
+  const partialRef = useRef("");
 
   const [audioBuffers, setAudioBuffers] = useState<Float32Array[]>([]);
   const [audioDuration, setAudioDuration] = useState(0);
@@ -131,6 +132,7 @@ export function useASR(): UseASRReturn {
             const finalText = (result.transcript || "").trim();
 
             if (!finalText) {
+              partialRef.current = "";
               setPartialTranscript("");
               return;
             }
@@ -173,11 +175,13 @@ export function useASR(): UseASRReturn {
               return merged;
             });
 
+            partialRef.current = "";
             setPartialTranscript("");
           } else {
             const partialText = (result.transcript || "").trim();
             if (!partialText) {
               lastPartialRef.current = "";
+              partialRef.current = "";
               setPartialTranscript("");
               return;
             }
@@ -189,6 +193,7 @@ export function useASR(): UseASRReturn {
             if (containsNormalized(transcriptRef.current, partialText)) return;
 
             lastPartialRef.current = partialText;
+            partialRef.current = partialText;
             lastTranscriptUpdateAtRef.current = Date.now();
             setPartialTranscript(partialText);
           }
@@ -240,6 +245,7 @@ export function useASR(): UseASRReturn {
       setPartialTranscript("");
       setTranscript("");
       transcriptRef.current = "";
+      partialRef.current = "";
 
       lastFinalRef.current = "";
       lastPartialRef.current = "";
@@ -400,6 +406,7 @@ export function useASR(): UseASRReturn {
 
   const stopASR = useCallback(() => {
     pausedRef.current = false;
+    partialRef.current = "";
 
     // close ws (send eof to flush, then close)
     closeWs(true);
@@ -440,6 +447,17 @@ export function useASR(): UseASRReturn {
   }, [closeWs]);
 
   const pauseASR = useCallback(() => {
+    const pendingPartial = partialRef.current.trim();
+    if (pendingPartial) {
+      setTranscript((prev) => {
+        const merged = mergeTranscript(prev, pendingPartial);
+        transcriptRef.current = merged;
+        return merged;
+      });
+      lastFinalRef.current = pendingPartial;
+      partialRef.current = "";
+    }
+
     pausedRef.current = true;
 
     // Also stop sending / receiving by closing ws (prevents server late-loop spam)
@@ -478,6 +496,7 @@ export function useASR(): UseASRReturn {
     setTranscript("");
     setPartialTranscript("");
     transcriptRef.current = "";
+    partialRef.current = "";
     lastFinalRef.current = "";
     lastPartialRef.current = "";
     recentFinalsRef.current = [];
