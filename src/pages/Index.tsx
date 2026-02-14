@@ -6,6 +6,13 @@ import RecordButton from "@/components/RecordButton";
 import TranscriptionDisplay from "@/components/TranscriptionDisplay";
 import { useASR } from "@/hooks/useASR";
 import AnalysisDashboard from "@/components/AnalysisDashboard";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { diffWords, pickPhonemeHint } from "@/lib/scoring";
 import { sampleText } from "@/components/ReferenceText";
 
@@ -15,6 +22,11 @@ const Index = () => {
   >("minimal");
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
+  const [finishSummary, setFinishSummary] = useState<{
+    score: number | null;
+    hint: string | null;
+  }>({ score: null, hint: null });
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const hasSpokenPromptRef = useRef(false);
@@ -46,8 +58,23 @@ const Index = () => {
     setMediaStream(null);
     setIsRecording(false);
     setIsPaused(false);
+    setIsFinishDialogOpen(false);
     resetTranscript();
   }, [mediaStream, stopASR, resetTranscript]);
+
+  const finishSession = useCallback(() => {
+    setFinishSummary({
+      score: hasFinalSpeech ? analysis.accuracy : null,
+      hint,
+    });
+    stopASR();
+    mediaRecorderRef.current?.stop();
+    mediaStream?.getTracks().forEach((t) => t.stop());
+    setMediaStream(null);
+    setIsRecording(false);
+    setIsPaused(false);
+    setIsFinishDialogOpen(true);
+  }, [analysis.accuracy, hasFinalSpeech, hint, mediaStream, stopASR]);
 
   const toggleRecording = useCallback(async () => {
     if (!isRecording) {
@@ -193,15 +220,7 @@ const Index = () => {
               Reset
             </button>
             <button
-              onClick={() => {
-                // Placeholder for future history integration
-                stopASR();
-                mediaRecorderRef.current?.stop();
-                mediaStream?.getTracks().forEach((t) => t.stop());
-                setMediaStream(null);
-                setIsRecording(false);
-                setIsPaused(false);
-              }}
+              onClick={finishSession}
               className="themed-action-btn px-3 py-2 rounded-md border border-border bg-card/70 text-sm hover:border-primary"
             >
               Finish
@@ -209,6 +228,42 @@ const Index = () => {
           </div>
         </div>
       </main>
+
+      <Dialog
+        open={isFinishDialogOpen}
+        onOpenChange={setIsFinishDialogOpen}
+      >
+        <DialogContent
+          className={`max-w-md themed-textbox themed-result-dialog border-border bg-card/95 theme-${theme}`}
+        >
+          <DialogHeader>
+            <DialogTitle className="themed-kicker text-base tracking-[0.12em] uppercase">
+              Final Result
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Session has ended. Here is your final score and coaching advice.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="themed-result-card rounded-md border border-border/60 bg-background/60 p-3">
+              <p className="themed-kicker text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                Final Score
+              </p>
+              <p className="mt-1 text-3xl font-semibold text-primary">
+                {finishSummary.score === null ? "--" : `${finishSummary.score.toFixed(1)}%`}
+              </p>
+            </div>
+            <div className="themed-result-card rounded-md border border-border/60 bg-background/60 p-3">
+              <p className="themed-kicker text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                Advice
+              </p>
+              <p className="mt-1 text-sm text-card-foreground">
+                {finishSummary.hint || "No advice available yet. Try another recording."}
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Decorative bottom line */}
       <motion.div
