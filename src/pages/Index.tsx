@@ -8,6 +8,9 @@ import { useASR } from "@/hooks/useASR";
 import AnalysisDashboard from "@/components/AnalysisDashboard";
 import { diffWords, pickPhonemeHint } from "@/lib/scoring";
 import { sampleText } from "@/components/ReferenceText";
+import { useToast } from "@/hooks/use-toast";
+
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3001").replace(/\/+$/, "");
 
 const Index = () => {
   const [theme, setTheme] = useState<
@@ -16,8 +19,11 @@ const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [referenceText, setReferenceText] = useState(sampleText.trim());
+  const [isGeneratingReference, setIsGeneratingReference] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const hasSpokenPromptRef = useRef(false);
+  const { toast } = useToast();
 
   const {
     transcript,
@@ -35,7 +41,7 @@ const Index = () => {
 
   const hasFinalSpeech = transcript.trim().length > 0;
   const analysis = hasFinalSpeech
-    ? diffWords(sampleText, transcript, wordConfidences)
+    ? diffWords(referenceText, transcript, wordConfidences)
     : { tokens: [], accuracy: 0, mismatches: [] };
   const hint = hasFinalSpeech ? pickPhonemeHint(analysis.mismatches) : null;
 
@@ -48,6 +54,45 @@ const Index = () => {
     setIsPaused(false);
     resetTranscript();
   }, [mediaStream, stopASR, resetTranscript]);
+
+  const handleGenerateReferenceText = useCallback(async () => {
+    if (isGeneratingReference) return;
+    setIsGeneratingReference(true);
+
+    try {
+      resetSession();
+      const response = await fetch(`${BACKEND_URL}/api/generate-reference-text`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lengthWords: 24,
+          level: "b1",
+          includeCommonPronunciationPairs: true,
+        }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const data = await response.json();
+      const nextText = typeof data?.text === "string" ? data.text.trim() : "";
+      if (!nextText) throw new Error("No text returned from generator");
+
+      setReferenceText(nextText);
+      toast({
+        title: "Reference text updated",
+        description: "A new practice sentence is ready.",
+      });
+    } catch (err) {
+      console.error("[ReferenceText] generation failed", err);
+      toast({
+        title: "Generation failed",
+        description: "Using the default sentence. Check Groq key and function logs.",
+        variant: "destructive",
+      });
+      setReferenceText(sampleText.trim());
+    } finally {
+      setIsGeneratingReference(false);
+    }
+  }, [isGeneratingReference, resetSession, toast]);
 
   const toggleRecording = useCallback(async () => {
     if (!isRecording) {
@@ -164,7 +209,11 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="themed-main flex-1 flex flex-col items-center justify-center px-6 py-10 gap-8 max-w-3xl mx-auto w-full">
-        <ReferenceText />
+        <ReferenceText
+          text={referenceText}
+          onGenerate={handleGenerateReferenceText}
+          isGenerating={isGeneratingReference}
+        />
         <TranscriptionDisplay
           transcript={transcript}
           partialTranscript={partialTranscript}
