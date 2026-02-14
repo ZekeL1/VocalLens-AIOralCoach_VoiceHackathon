@@ -3,21 +3,23 @@ export type TokenDiff = {
   status: "match" | "miss" | "extra";
 };
 
-const strip = (w: string) => w.toLowerCase().replace(/[^\w']/g, "");
-
 export function diffWords(reference: string, hypothesis: string) {
-  const ref = reference
+  const refAll = reference
     .toLowerCase()
     .replace(/[^\w\s']/g, " ")
     .split(/\s+/)
     .filter(Boolean);
+
   const hyp = hypothesis
     .toLowerCase()
     .replace(/[^\w\s']/g, " ")
     .split(/\s+/)
     .filter(Boolean);
 
-  const maxLen = hyp.length; // 只对比已读部分
+  // Compare only against the same-length prefix of the reference text.
+  const ref = refAll.slice(0, hyp.length);
+  const maxLen = hyp.length;
+
   const tokens: TokenDiff[] = [];
   let matches = 0;
   const mismatches: Array<{ ref?: string; hyp?: string }> = [];
@@ -25,6 +27,7 @@ export function diffWords(reference: string, hypothesis: string) {
   for (let i = 0; i < maxLen; i++) {
     const r = ref[i];
     const h = hyp[i];
+
     if (r && h) {
       if (r === h) {
         tokens.push({ word: h, status: "match" });
@@ -39,7 +42,8 @@ export function diffWords(reference: string, hypothesis: string) {
     }
   }
 
-  const accuracy = ref.length ? Math.max(0, Math.round((matches / ref.length) * 100)) : 0;
+  const accuracyBase = ref.length;
+  const accuracy = accuracyBase ? Math.max(0, Math.round((matches / accuracyBase) * 100)) : 0;
 
   return { tokens, accuracy, mismatches };
 }
@@ -49,20 +53,38 @@ const phonemeRules: Array<{
   hyp: RegExp;
   tip: string;
 }> = [
-  { ref: /^th/, hyp: /^d/, tip: "Possible /ð/ → /d/ substitution; place tongue lightly behind upper teeth." },
-  { ref: /^v/, hyp: /^w/, tip: "Possible /v/ → /w/; touch upper teeth to lower lip and voice the sound." },
-  { ref: /^l/, hyp: /^r/, tip: "Possible /l/ → /r/; keep tongue tip on alveolar ridge to avoid retroflex /r/." },
-  { ref: /ing$/, hyp: /in$/, tip: "Possible /ŋ/ → /n/; lift tongue back to seal the soft palate for /ŋ/." },
+  {
+    ref: /^th/,
+    hyp: /^d/,
+    tip: "Possible /th/ to /d/ substitution; place your tongue lightly behind the upper teeth.",
+  },
+  {
+    ref: /^v/,
+    hyp: /^w/,
+    tip: "Possible /v/ to /w/ substitution; touch upper teeth to lower lip and keep voicing.",
+  },
+  {
+    ref: /^l/,
+    hyp: /^r/,
+    tip: "Possible /l/ to /r/ substitution; keep the tongue tip on the alveolar ridge.",
+  },
+  {
+    ref: /ing$/,
+    hyp: /in$/,
+    tip: "Possible /ng/ to /n/ ending shift; lift the back of the tongue for /ng/.",
+  },
 ];
 
 export function pickPhonemeHint(mismatches: Array<{ ref?: string; hyp?: string }>) {
-  for (const m of mismatches) {
-    if (!m.ref || !m.hyp) continue;
+  for (const mismatch of mismatches) {
+    if (!mismatch.ref || !mismatch.hyp) continue;
+
     for (const rule of phonemeRules) {
-      if (rule.ref.test(m.ref) && rule.hyp.test(m.hyp)) {
+      if (rule.ref.test(mismatch.ref) && rule.hyp.test(mismatch.hyp)) {
         return rule.tip;
       }
     }
   }
+
   return null;
 }
