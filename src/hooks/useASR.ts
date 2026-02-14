@@ -30,10 +30,17 @@ const WS_URL =
 // Keep last ~120s of audio buffers in memory
 const MAX_SAMPLES = SAMPLE_RATE * 120;
 
-// Endpointing params (tune if needed)
-const RMS_SILENCE = 0.004;        // silence threshold
-const SILENCE_FRAMES_TO_EOF = 12; // ~12 * (bufferSize/sampleRate) seconds
+// Endpointing params (adaptive VAD + hard guards)
+const RMS_MIN_THRESHOLD = 0.0015;
+const NOISE_FLOOR_MIN = 0.0005;
+const NOISE_FLOOR_ALPHA = 0.08;
+const SPEECH_START_MULTIPLIER = 3.0;
+const SPEECH_END_MULTIPLIER = 2.0;
+const SPEECH_FRAMES_TO_START = 2;
+const SILENCE_FRAMES_TO_EOF = 10; // ~1.28s with 2048/16k
 const SILENCE_FRAMES_CLEAR_PARTIAL = 8;
+const MAX_UTTERANCE_MS = 12000;
+const NO_TRANSCRIPT_TIMEOUT_MS = 6000;
 
 export function useASR(): UseASRReturn {
   const [transcript, setTranscript] = useState("");
@@ -56,16 +63,21 @@ export function useASR(): UseASRReturn {
 
   // Controls
   const pausedRef = useRef(false);
+  const connectingRef = useRef<Promise<void> | null>(null);
 
   // Anti-repeat / dedupe
   const lastFinalRef = useRef("");
   const lastPartialRef = useRef("");
   const recentFinalsRef = useRef<string[]>([]);
 
-  // Endpointing (VERY IMPORTANT FIX)
+  // Endpointing / VAD state
+  const noiseFloorRef = useRef(RMS_MIN_THRESHOLD);
+  const speechFramesRef = useRef(0);
   const silenceFramesRef = useRef(0);
   const inUtteranceRef = useRef(false);
   const eofSentRef = useRef(false);
+  const utteranceStartedAtRef = useRef(0);
+  const lastTranscriptUpdateAtRef = useRef(0);
 
   const fetchToken = useCallback(async (): Promise<string> => {
     const { data, error } = await supabase.functions.invoke("get-asr-token");
@@ -153,6 +165,7 @@ export function useASR(): UseASRReturn {
             lastFinalRef.current = finalText;
             pushRecentFinal(recentFinalsRef.current, finalText);
             lastPartialRef.current = "";
+            lastTranscriptUpdateAtRef.current = Date.now();
 
             setTranscript((prev) => {
               const merged = mergeTranscript(prev, finalText);
@@ -176,6 +189,7 @@ export function useASR(): UseASRReturn {
             if (containsNormalized(transcriptRef.current, partialText)) return;
 
             lastPartialRef.current = partialText;
+            lastTranscriptUpdateAtRef.current = Date.now();
             setPartialTranscript(partialText);
           }
         } catch (e) {
@@ -197,11 +211,23 @@ export function useASR(): UseASRReturn {
 
   const ensureWsOpen = useCallback(async () => {
     const ws = wsRef.current;
-    if (ws && ws.readyState === WebSocket.OPEN) return;
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
     if (pausedRef.current) return;
+    if (connectingRef.current) {
+      await connectingRef.current;
+      return;
+    }
 
-    const token = await fetchToken();
-    await connectWs(token);
+    connectingRef.current = (async () => {
+      const token = await fetchToken();
+      await connectWs(token);
+    })();
+
+    try {
+      await connectingRef.current;
+    } finally {
+      connectingRef.current = null;
+    }
   }, [connectWs, fetchToken]);
 
   const startASR = useCallback(
@@ -220,8 +246,12 @@ export function useASR(): UseASRReturn {
       recentFinalsRef.current = [];
 
       silenceFramesRef.current = 0;
+      speechFramesRef.current = 0;
+      noiseFloorRef.current = RMS_MIN_THRESHOLD;
       inUtteranceRef.current = false;
       eofSentRef.current = false;
+      utteranceStartedAtRef.current = 0;
+      lastTranscriptUpdateAtRef.current = Date.now();
 
       pausedRef.current = false;
       streamRef.current = stream;
@@ -260,7 +290,7 @@ export function useASR(): UseASRReturn {
       gain.gain.value = 0;
       gainRef.current = gain;
 
-      const bufferSize = 4096;
+      const bufferSize = 2048;
       const processor = audioCtx.createScriptProcessor(bufferSize, 1, 1);
       processorRef.current = processor;
 
@@ -269,44 +299,83 @@ export function useASR(): UseASRReturn {
 
         const input = e.inputBuffer.getChannelData(0);
         const rms = computeRms(input);
+        const now = Date.now();
 
-        // Silence path
-        if (rms < RMS_SILENCE) {
+        if (!inUtteranceRef.current) {
+          const prevNoise = Math.max(NOISE_FLOOR_MIN, noiseFloorRef.current);
+          // Update floor only when frame looks like background/noise.
+          if (rms < prevNoise * SPEECH_START_MULTIPLIER) {
+            noiseFloorRef.current = Math.max(
+              NOISE_FLOOR_MIN,
+              prevNoise * (1 - NOISE_FLOOR_ALPHA) + rms * NOISE_FLOOR_ALPHA
+            );
+          }
+        }
+
+        const speechStartThreshold = Math.max(
+          RMS_MIN_THRESHOLD,
+          noiseFloorRef.current * SPEECH_START_MULTIPLIER
+        );
+        const speechEndThreshold = Math.max(
+          RMS_MIN_THRESHOLD,
+          noiseFloorRef.current * SPEECH_END_MULTIPLIER
+        );
+
+        const endUtterance = () => {
+          if (eofSentRef.current) return;
+          eofSentRef.current = true;
+          setPartialTranscript("");
+          closeWs(true);
+          inUtteranceRef.current = false;
+          silenceFramesRef.current = 0;
+          speechFramesRef.current = 0;
+          utteranceStartedAtRef.current = 0;
+        };
+
+        // Not in utterance: wait for stable speech frames.
+        if (!inUtteranceRef.current) {
+          if (rms >= speechStartThreshold) {
+            speechFramesRef.current += 1;
+          } else {
+            speechFramesRef.current = 0;
+          }
+
+          if (speechFramesRef.current < SPEECH_FRAMES_TO_START) {
+            return;
+          }
+
+          inUtteranceRef.current = true;
+          eofSentRef.current = false;
+          silenceFramesRef.current = 0;
+          speechFramesRef.current = 0;
+          utteranceStartedAtRef.current = now;
+          lastTranscriptUpdateAtRef.current = now;
+          await ensureWsOpen();
+        }
+
+        if (rms < speechEndThreshold) {
           silenceFramesRef.current += 1;
 
           if (silenceFramesRef.current > SILENCE_FRAMES_CLEAR_PARTIAL) {
             setPartialTranscript("");
           }
 
-          // Endpointing: treat long silence as end-of-utterance
-          if (
-            inUtteranceRef.current &&
-            !eofSentRef.current &&
-            silenceFramesRef.current > SILENCE_FRAMES_TO_EOF
-          ) {
-            eofSentRef.current = true;
-            setPartialTranscript("");
-
-            // Tell server this utterance is done, then CLOSE socket to avoid late-loop finals
-            // Next voice will auto-reconnect via ensureWsOpen()
-            closeWs(true);
-
-            // Ready for next utterance
-            inUtteranceRef.current = false;
+          if (silenceFramesRef.current > SILENCE_FRAMES_TO_EOF) {
+            endUtterance();
           }
 
           return;
         }
 
-        // Voice path
         silenceFramesRef.current = 0;
 
-        // Start of a new utterance
-        if (!inUtteranceRef.current) {
-          inUtteranceRef.current = true;
-          eofSentRef.current = false;
-          // Reconnect if we closed after previous eof
-          await ensureWsOpen();
+        if (utteranceStartedAtRef.current > 0) {
+          const utteranceAge = now - utteranceStartedAtRef.current;
+          const noTranscriptAge = now - lastTranscriptUpdateAtRef.current;
+          if (utteranceAge > MAX_UTTERANCE_MS || noTranscriptAge > NO_TRANSCRIPT_TIMEOUT_MS) {
+            endUtterance();
+            return;
+          }
         }
 
         // Keep audio buffers
@@ -361,8 +430,11 @@ export function useASR(): UseASRReturn {
 
     // reset endpoint flags
     silenceFramesRef.current = 0;
+    speechFramesRef.current = 0;
+    noiseFloorRef.current = RMS_MIN_THRESHOLD;
     inUtteranceRef.current = false;
     eofSentRef.current = false;
+    utteranceStartedAtRef.current = 0;
 
     setIsConnected(false);
   }, [closeWs]);
@@ -387,8 +459,12 @@ export function useASR(): UseASRReturn {
 
     // reset endpoint flags so we start clean
     silenceFramesRef.current = 0;
+    speechFramesRef.current = 0;
+    noiseFloorRef.current = RMS_MIN_THRESHOLD;
     inUtteranceRef.current = false;
     eofSentRef.current = false;
+    utteranceStartedAtRef.current = 0;
+    lastTranscriptUpdateAtRef.current = Date.now();
 
     const ctx = audioCtxRef.current;
     if (ctx && ctx.state === "suspended") {
@@ -407,8 +483,12 @@ export function useASR(): UseASRReturn {
     recentFinalsRef.current = [];
 
     silenceFramesRef.current = 0;
+    speechFramesRef.current = 0;
+    noiseFloorRef.current = RMS_MIN_THRESHOLD;
     inUtteranceRef.current = false;
     eofSentRef.current = false;
+    utteranceStartedAtRef.current = 0;
+    lastTranscriptUpdateAtRef.current = Date.now();
   }, []);
 
   useEffect(() => {
