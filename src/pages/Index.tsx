@@ -10,6 +10,9 @@ import { diffWords, pickPhonemeHint } from "@/lib/scoring";
 import { sampleText } from "@/components/ReferenceText";
 
 const Index = () => {
+  const [theme, setTheme] = useState<
+    "neon" | "minimal" | "trendy" | "accessible"
+  >("minimal");
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
@@ -70,24 +73,43 @@ const Index = () => {
   }, [isRecording, isPaused, mediaStream, startASR, pauseASR, resumeASR]);
 
   return (
-    <div className="relative min-h-screen bg-background grid-bg flex flex-col">
+    <div
+      className={`relative min-h-screen bg-background grid-bg flex flex-col theme-${theme}`}
+      data-theme={theme}
+    >
       {/* Header */}
-      <header className="border-b border-border/50 px-6 py-4">
+      <header className="border-b border-border/50 px-6 py-4 themed-header">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-primary neon-glow" />
-            <h1 className="font-display text-sm tracking-[0.3em] uppercase text-primary neon-text">
+            <h1 className="themed-title font-display text-sm tracking-[0.3em] uppercase text-primary neon-text">
               VocalLens
             </h1>
           </div>
-          <span className="font-display text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
-            AI Oral Coach
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+              AI Oral Coach
+            </span>
+            <label className="sr-only" htmlFor="theme-select">
+              Select theme
+            </label>
+            <select
+              id="theme-select"
+              value={theme}
+              onChange={(e) => setTheme(e.target.value as typeof theme)}
+              className="theme-select rounded-md border border-border/60 bg-card/70 px-3 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="minimal">Minimal</option>
+              <option value="neon">Neon</option>
+              <option value="trendy">Trendy</option>
+              <option value="accessible">Accessible</option>
+            </select>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-10 gap-8 max-w-3xl mx-auto w-full">
+      <main className="themed-main flex-1 flex flex-col items-center justify-center px-6 py-10 gap-8 max-w-3xl mx-auto w-full">
         <ReferenceText />
         <TranscriptionDisplay
           transcript={transcript}
@@ -115,7 +137,7 @@ const Index = () => {
                 setIsPaused(false);
                 resetTranscript();
               }}
-              className="px-3 py-2 rounded-md border border-border bg-card/70 text-sm hover:border-primary"
+              className="themed-action-btn px-3 py-2 rounded-md border border-border bg-card/70 text-sm hover:border-primary"
             >
               Reset
             </button>
@@ -129,7 +151,7 @@ const Index = () => {
                 setIsRecording(false);
                 setIsPaused(false);
               }}
-              className="px-3 py-2 rounded-md border border-border bg-card/70 text-sm hover:border-primary"
+              className="themed-action-btn px-3 py-2 rounded-md border border-border bg-card/70 text-sm hover:border-primary"
             >
               Finish
             </button>

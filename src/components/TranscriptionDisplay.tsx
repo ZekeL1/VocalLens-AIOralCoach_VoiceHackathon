@@ -26,13 +26,13 @@ const TranscriptionDisplay = ({
     >
       <div className="flex items-center gap-2 mb-3">
         <div className="h-px flex-1 bg-gradient-to-r from-accent/60 to-transparent" />
-        <span className="font-display text-xs tracking-[0.3em] uppercase text-accent">
+        <span className="themed-kicker font-display text-xs tracking-[0.3em] uppercase text-accent">
           Your Speech
         </span>
         <div className="h-px flex-1 bg-gradient-to-l from-accent/60 to-transparent" />
       </div>
 
-      <div className="relative rounded-lg border border-border bg-card/50 p-6 min-h-[80px] overflow-hidden">
+      <div className="themed-textbox relative rounded-lg border border-border bg-card/50 p-6 min-h-[80px] overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-20" />
 
         <div className="relative z-10">
@@ -42,7 +42,7 @@ const TranscriptionDisplay = ({
                 key="content"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-lg leading-relaxed text-card-foreground font-light tracking-wide"
+                className="themed-copy text-lg leading-relaxed text-card-foreground font-light tracking-wide"
               >
                 {tokens.map((t, idx) => (
                   <span
@@ -71,7 +71,7 @@ const TranscriptionDisplay = ({
                 key="placeholder"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 0.4 }}
-                className="text-lg leading-relaxed text-muted-foreground font-light tracking-wide italic"
+                className="themed-copy text-lg leading-relaxed text-muted-foreground font-light tracking-wide italic"
               >
                 {isRecording
                   ? "Listening..."
@@ -89,7 +89,7 @@ const TranscriptionDisplay = ({
                 isConnected ? "bg-primary animate-pulse" : "bg-destructive"
               }`}
             />
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+            <span className="themed-kicker font-display text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
               {isConnected ? "ASR Connected" : "Connecting..."}
             </span>
           </div>
