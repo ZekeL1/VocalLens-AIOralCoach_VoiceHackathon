@@ -28,20 +28,24 @@ export interface UseASRReturn {
 }
 
 const SAMPLE_RATE = 16000;
-const WS_URL = "wss://waves-api.smallest.ai/api/v1/lightning/get_text";
+const WS_URL =
+  import.meta.env.DEV
+    ? `ws://${location.host}/asr-ws/api/v1/lightning/get_text`
+    : "wss://waves-api.smallest.ai/api/v1/lightning/get_text";
 
 export function useASR(): UseASRReturn {
   const [transcript, setTranscript] = useState("");
   const [partialTranscript, setPartialTranscript] = useState("");
   const [isConnected, setIsConnected] = useState(false);
 
+  const transcriptRef = useRef<string>("");
   const wsRef = useRef<WebSocket | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const audioBuffersRef = useRef<Float32Array[]>([]);
   const [audioBuffers, setAudioBuffers] = useState<Float32Array[]>([]);
   const [audioDuration, setAudioDuration] = useState(0);
+  const lastFinalRef = useRef<string>("");
 
   const fetchToken = useCallback(async (): Promise<string> => {
     const { data, error } = await supabase.functions.invoke("get-asr-token");
@@ -52,6 +56,9 @@ export function useASR(): UseASRReturn {
   const startASR = useCallback(async (stream: MediaStream) => {
     // Reset
     audioBuffersRef.current = [];
+    lastFinalRef.current = "";
+    setTranscript("");
+    transcriptRef.current = "";
     setAudioBuffers([]);
     setAudioDuration(0);
     setPartialTranscript("");
@@ -60,12 +67,13 @@ export function useASR(): UseASRReturn {
 
     // Build WebSocket URL with params
     const url = new URL(WS_URL);
-    url.searchParams.set("authorization", `token:${token}`);
+    // 在 query 携带 token，避免代理头缺失导致 401
+    url.searchParams.set("authorization", `Bearer ${token}`);
     url.searchParams.set("language", "en");
     url.searchParams.set("encoding", "linear16");
     url.searchParams.set("sample_rate", String(SAMPLE_RATE));
     url.searchParams.set("word_timestamps", "false");
-    url.searchParams.set("full_transcript", "true");
+    url.searchParams.set("full_transcript", "true"); // API will send cumulative transcript
 
     const ws = new WebSocket(url.toString());
     wsRef.current = ws;
@@ -79,10 +87,26 @@ export function useASR(): UseASRReturn {
       try {
         const result: ASRResult = JSON.parse(event.data);
         if (result.is_final) {
-          setTranscript((prev) => {
-            const sep = prev ? " " : "";
-            return prev + sep + result.transcript;
-          });
+          const finalText = (result.transcript || "").trim();
+          if (!finalText) {
+            setPartialTranscript("");
+            return;
+          }
+
+          const prev = transcriptRef.current;
+
+          if (finalText.startsWith(prev)) {
+            setTranscript(finalText);
+            transcriptRef.current = finalText;
+            lastFinalRef.current = finalText;
+          } else if (prev.startsWith(finalText)) {
+            // ignore shorter snapshot
+          } else {
+            const combined = prev ? `${prev} ${finalText}` : finalText;
+            setTranscript(combined);
+            transcriptRef.current = combined;
+            lastFinalRef.current = combined;
+          }
           setPartialTranscript("");
         } else {
           setPartialTranscript(result.transcript || "");
@@ -123,7 +147,7 @@ export function useASR(): UseASRReturn {
       const pcm16 = float32ToInt16(inputData);
 
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(pcm16 as unknown as ArrayBuffer);
+        ws.send(pcm16);
       }
     };
 
