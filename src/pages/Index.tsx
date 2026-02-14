@@ -37,6 +37,16 @@ const Index = () => {
     : { tokens: [], accuracy: 0, mismatches: [] };
   const hint = hasSpeech ? pickPhonemeHint(analysis.mismatches) : null;
 
+  const resetSession = useCallback(() => {
+    stopASR();
+    mediaRecorderRef.current?.stop();
+    mediaStream?.getTracks().forEach((t) => t.stop());
+    setMediaStream(null);
+    setIsRecording(false);
+    setIsPaused(false);
+    resetTranscript();
+  }, [mediaStream, stopASR, resetTranscript]);
+
   const toggleRecording = useCallback(async () => {
     if (!isRecording) {
       // Start recording
@@ -96,7 +106,13 @@ const Index = () => {
             <select
               id="theme-select"
               value={theme}
-              onChange={(e) => setTheme(e.target.value as typeof theme)}
+              onChange={(e) => {
+                const nextTheme = e.target.value as typeof theme;
+                if (nextTheme !== theme) {
+                  setTheme(nextTheme);
+                  resetSession();
+                }
+              }}
               className="theme-select rounded-md border border-border/60 bg-card/70 px-3 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="minimal">Minimal</option>
@@ -119,7 +135,12 @@ const Index = () => {
           isRecording={isRecording}
         />
         <AnalysisDashboard accuracy={hasSpeech ? analysis.accuracy : null} hint={hint} />
-        <Waveform isRecording={isRecording} isPaused={isPaused} mediaStream={mediaStream} />
+        <Waveform
+          theme={theme}
+          isRecording={isRecording}
+          isPaused={isPaused}
+          mediaStream={mediaStream}
+        />
         <div className="flex flex-col items-center gap-3">
           <RecordButton
             isRecording={isRecording}
@@ -128,15 +149,7 @@ const Index = () => {
           />
           <div className="flex gap-3">
             <button
-              onClick={() => {
-                stopASR();
-                mediaRecorderRef.current?.stop();
-                mediaStream?.getTracks().forEach((t) => t.stop());
-                setMediaStream(null);
-                setIsRecording(false);
-                setIsPaused(false);
-                resetTranscript();
-              }}
+              onClick={resetSession}
               className="themed-action-btn px-3 py-2 rounded-md border border-border bg-card/70 text-sm hover:border-primary"
             >
               Reset

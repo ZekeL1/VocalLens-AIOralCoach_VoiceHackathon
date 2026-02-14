@@ -77,8 +77,8 @@ export default {
           to: { height: "0" },
         },
         "pulse-neon": {
-          "0%, 100%": { boxShadow: "0 0 10px hsl(145 100% 50% / 0.5), 0 0 30px hsl(145 100% 50% / 0.2)" },
-          "50%": { boxShadow: "0 0 20px hsl(145 100% 50% / 0.8), 0 0 50px hsl(145 100% 50% / 0.4)" },
+          "0%, 100%": { boxShadow: "var(--neon-glow)" },
+          "50%": { boxShadow: "var(--neon-glow-strong)" },
         },
       },
       animation: {
