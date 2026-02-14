@@ -238,8 +238,8 @@ export function useASR(): UseASRReturn {
           const ws = wsRef.current;
           const wsAlive =
             !!ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING);
-          // Do not prematurely freeze text during active streaming.
-          if (!capturePausedRef.current && wsAlive) return;
+          // Do not prematurely freeze text while WS is still alive.
+          if (wsAlive) return;
           commitPendingPartial();
         }, PARTIAL_IDLE_COMMIT_MS);
         maybeCloseAfterLast();
@@ -269,7 +269,6 @@ export function useASR(): UseASRReturn {
   const ensureWsOpen = useCallback(async () => {
     const ws = wsRef.current;
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
-    if (capturePausedRef.current) return;
     if (stopRequestedRef.current) return;
     if (connectingRef.current) {
       await connectingRef.current;
@@ -359,20 +358,22 @@ export function useASR(): UseASRReturn {
     processorRef.current = processor;
 
     processor.onaudioprocess = async (event) => {
-      if (capturePausedRef.current) return;
-
       const input = event.inputBuffer.getChannelData(0);
       await ensureWsOpen();
+
+      const ws = wsRef.current;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        // Pause only stops mic capture; WS remains alive via silence frames.
+        const frame = capturePausedRef.current ? new Float32Array(input.length) : input;
+        const pcm16 = float32ToInt16(frame);
+        ws.send(pcm16 as unknown as ArrayBuffer);
+      }
+
+      if (capturePausedRef.current) return;
 
       const copy = new Float32Array(input.length);
       copy.set(input);
       pushWithCap(audioBuffersRef.current, copy, MAX_SAMPLES);
-
-      const ws = wsRef.current;
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        const pcm16 = float32ToInt16(input);
-        ws.send(pcm16 as unknown as ArrayBuffer);
-      }
     };
 
     source.connect(processor);
@@ -423,18 +424,10 @@ export function useASR(): UseASRReturn {
 
   const pauseASR = useCallback(() => {
     capturePausedRef.current = true;
-    const ctx = audioCtxRef.current;
-    if (ctx && ctx.state === "running") {
-      void ctx.suspend();
-    }
   }, []);
 
   const resumeASR = useCallback(async () => {
     capturePausedRef.current = false;
-    const ctx = audioCtxRef.current;
-    if (ctx && ctx.state === "suspended") {
-      await ctx.resume();
-    }
     await ensureWsOpen();
   }, [ensureWsOpen]);
 
