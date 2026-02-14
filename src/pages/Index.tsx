@@ -8,6 +8,11 @@ import { useASR } from "@/hooks/useASR";
 import AnalysisDashboard from "@/components/AnalysisDashboard";
 import { diffWords, pickPhonemeHint } from "@/lib/scoring";
 import { sampleText } from "@/components/ReferenceText";
+import {
+  cachePronunciationFeedback,
+  requestPronunciationFeedback,
+  type PronunciationFeedback,
+} from "@/lib/pronunciationFeedback";
 
 const Index = () => {
   const [theme, setTheme] = useState<
@@ -16,6 +21,8 @@ const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [pendingFeedbackFetch, setPendingFeedbackFetch] = useState(false);
+  const [cachedFeedback, setCachedFeedback] = useState<PronunciationFeedback | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const hasSpokenPromptRef = useRef(false);
 
@@ -46,6 +53,7 @@ const Index = () => {
     setMediaStream(null);
     setIsRecording(false);
     setIsPaused(false);
+    setPendingFeedbackFetch(false);
     resetTranscript();
   }, [mediaStream, stopASR, resetTranscript]);
 
@@ -83,6 +91,58 @@ const Index = () => {
     }
     setIsPaused(!isPaused);
   }, [isRecording, isPaused, mediaStream, startASR, pauseASR, resumeASR]);
+
+  useEffect(() => {
+    if (!pendingFeedbackFetch) return;
+    if (isConnected) return;
+    if (isRecording) return;
+
+    const finalTranscript = transcript.trim();
+    if (!finalTranscript) {
+      setPendingFeedbackFetch(false);
+      return;
+    }
+
+    const payload = {
+      sampleText,
+      transcript: finalTranscript,
+      wordConfidences,
+      accuracy: hasFinalSpeech ? analysis.accuracy : null,
+      mismatches: analysis.mismatches,
+    };
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const feedback = await requestPronunciationFeedback(payload);
+        if (cancelled) return;
+        setCachedFeedback(feedback);
+        cachePronunciationFeedback(payload, feedback);
+      } catch (err) {
+        console.error("Failed to fetch pronunciation feedback:", err);
+      } finally {
+        if (!cancelled) setPendingFeedbackFetch(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    analysis.accuracy,
+    analysis.mismatches,
+    hasFinalSpeech,
+    isConnected,
+    isRecording,
+    pendingFeedbackFetch,
+    transcript,
+    wordConfidences,
+  ]);
+
+  useEffect(() => {
+    (window as Window & { __cachedPronunciationFeedback?: PronunciationFeedback | null }).__cachedPronunciationFeedback =
+      cachedFeedback;
+  }, [cachedFeedback]);
 
   useEffect(() => {
     const speakPrompt = () => {
@@ -201,6 +261,7 @@ const Index = () => {
                 setMediaStream(null);
                 setIsRecording(false);
                 setIsPaused(false);
+                setPendingFeedbackFetch(true);
               }}
               className="themed-action-btn px-3 py-2 rounded-md border border-border bg-card/70 text-sm hover:border-primary"
             >
