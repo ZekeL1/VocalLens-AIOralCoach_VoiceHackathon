@@ -395,3 +395,160 @@
 .theme-minimal .themed-wave-grid {
   opacity: 0.12;
 }
+
+.themed-result-dialog {
+  border-width: 1px;
+}
+
+.themed-result-card {
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.themed-result-dialog.theme-minimal {
+  border-color: hsl(214 24% 84%);
+  background: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 30% 96%));
+  box-shadow: 0 16px 30px hsl(220 22% 28% / 0.18);
+}
+
+.themed-result-dialog.theme-minimal .themed-result-card {
+  border-color: hsl(214 24% 86%);
+  background: hsl(210 30% 98%);
+  box-shadow: 0 8px 20px hsl(220 22% 30% / 0.08);
+}
+
+.themed-result-dialog.theme-neon {
+  border-color: hsl(var(--primary) / 0.5);
+  background: linear-gradient(160deg, hsl(220 18% 11%), hsl(220 18% 9%));
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2), 0 0 38px hsl(var(--primary) / 0.18);
+}
+
+.themed-result-dialog.theme-neon .themed-result-card {
+  border-color: hsl(var(--primary) / 0.35);
+  background: hsl(220 20% 12% / 0.92);
+  box-shadow: inset 0 0 16px hsl(var(--primary) / 0.08), 0 0 20px hsl(var(--primary) / 0.09);
+}
+
+.themed-result-dialog.theme-trendy {
+  border-radius: 1.2rem;
+  border-color: hsl(304 55% 74%);
+  background: linear-gradient(145deg, hsl(0 0% 100%), hsl(322 100% 96%));
+  box-shadow: 0 20px 36px hsl(322 100% 58% / 0.26);
+}
+
+.themed-result-dialog.theme-trendy .themed-result-card {
+  border-color: hsl(304 60% 80%);
+  background: linear-gradient(145deg, hsl(0 0% 100%), hsl(34 100% 95%));
+  box-shadow: 0 12px 24px hsl(322 100% 58% / 0.14);
+}
+
+.themed-result-dialog.theme-trendy .themed-kicker {
+  color: hsl(260 36% 22%);
+  font-family: 'Nunito', 'Inter', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-shadow: none;
+}
+
+.themed-result-dialog.theme-accessible {
+  border-width: 3px;
+  border-color: hsl(0 0% 10%);
+  background: hsl(0 0% 100%);
+  box-shadow: 0 0 0 4px hsl(220 100% 30% / 0.2);
+}
+
+.themed-result-dialog.theme-accessible .themed-result-card {
+  border-width: 2px;
+  border-color: hsl(0 0% 14%);
+  background: hsl(0 0% 100%);
+}
+
+.themed-result-dialog.theme-accessible .themed-kicker {
+  font-size: 1.1rem;
+  color: hsl(0 0% 8%);
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  text-shadow: none;
+}
+
+.themed-result-dialog.theme-accessible p {
+  font-size: 1.15rem;
+  line-height: 1.8;
+}
+
+/* Finish dialog close button (X) theme overrides */
+.themed-result-dialog > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  line-height: 1;
+  border-radius: 0.5rem;
+}
+
+.themed-result-dialog > button svg {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.themed-result-dialog.theme-minimal > button {
+  color: hsl(220 38% 34%);
+  background: hsl(210 32% 96%);
+  border: 1px solid hsl(214 24% 82%);
+}
+
+.themed-result-dialog.theme-minimal > button:hover {
+  color: hsl(220 55% 32%);
+  background: hsl(210 32% 93%);
+}
+
+.themed-result-dialog.theme-neon > button {
+  color: hsl(145 100% 66%);
+  background: hsl(220 18% 14%);
+  border: 1px solid hsl(145 100% 50% / 0.45);
+  box-shadow: 0 0 12px hsl(145 100% 50% / 0.28);
+}
+
+.themed-result-dialog.theme-neon > button:hover {
+  color: hsl(145 100% 75%);
+  background: hsl(220 18% 16%);
+  box-shadow: 0 0 16px hsl(145 100% 50% / 0.35);
+}
+
+.themed-result-dialog.theme-trendy > button {
+  color: hsl(322 82% 44%);
+  background: hsl(34 100% 95%);
+  border: 1px solid hsl(304 60% 74%);
+  box-shadow: 0 8px 18px hsl(322 100% 58% / 0.16);
+}
+
+.themed-result-dialog.theme-trendy > button:hover {
+  color: hsl(322 92% 38%);
+  background: hsl(34 100% 92%);
+}
+
+.themed-result-dialog.theme-trendy > button svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.themed-result-dialog.theme-accessible > button {
+  width: 2.75rem;
+  height: 2.75rem;
+  color: hsl(0 0% 5%);
+  background: hsl(0 0% 100%);
+  border: 2px solid hsl(0 0% 12%);
+  opacity: 1;
+}
+
+.themed-result-dialog.theme-accessible > button:hover {
+  color: hsl(220 100% 28%);
+  background: hsl(0 0% 95%);
+}
+
+.themed-result-dialog.theme-accessible > button svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
