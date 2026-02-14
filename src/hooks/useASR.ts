@@ -33,6 +33,7 @@ export interface UseASRReturn {
 
 const SAMPLE_RATE = 16000;
 const PARTIAL_IDLE_COMMIT_MS = 2200;
+const STOP_FINAL_WAIT_MS = 1800;
 const WS_URL =
   import.meta.env.DEV
     ? `ws://${location.host}/asr-ws/api/v1/lightning/get_text`
@@ -53,6 +54,8 @@ export function useASR(): UseASRReturn {
   const connectingRef = useRef<Promise<void> | null>(null);
   const capturePausedRef = useRef(false);
   const partialCommitTimerRef = useRef<number | null>(null);
+  const stopRequestedRef = useRef(false);
+  const stopTimeoutRef = useRef<number | null>(null);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
@@ -74,6 +77,13 @@ export function useASR(): UseASRReturn {
   }, []);
 
   const closeWs = useCallback((sendEof: boolean) => {
+    stopRequestedRef.current = false;
+
+    if (stopTimeoutRef.current !== null) {
+      window.clearTimeout(stopTimeoutRef.current);
+      stopTimeoutRef.current = null;
+    }
+
     if (partialCommitTimerRef.current !== null) {
       window.clearTimeout(partialCommitTimerRef.current);
       partialCommitTimerRef.current = null;
@@ -152,6 +162,12 @@ export function useASR(): UseASRReturn {
         const result: ASRResult = JSON.parse(event.data);
         logWordConfidences(result);
 
+        const maybeCloseAfterLast = () => {
+          if (stopRequestedRef.current && result.is_last) {
+            closeWs(false);
+          }
+        };
+
         if (result.is_final) {
           const finalText = (result.transcript || "").trim();
           if (!finalText) {
@@ -161,6 +177,7 @@ export function useASR(): UseASRReturn {
               window.clearTimeout(partialCommitTimerRef.current);
               partialCommitTimerRef.current = null;
             }
+            maybeCloseAfterLast();
             return;
           }
 
@@ -190,6 +207,7 @@ export function useASR(): UseASRReturn {
             window.clearTimeout(partialCommitTimerRef.current);
             partialCommitTimerRef.current = null;
           }
+          maybeCloseAfterLast();
           return;
         }
 
@@ -202,6 +220,7 @@ export function useASR(): UseASRReturn {
             window.clearTimeout(partialCommitTimerRef.current);
             partialCommitTimerRef.current = null;
           }
+          maybeCloseAfterLast();
           return;
         }
 
@@ -223,6 +242,7 @@ export function useASR(): UseASRReturn {
           if (!capturePausedRef.current && wsAlive) return;
           commitPendingPartial();
         }, PARTIAL_IDLE_COMMIT_MS);
+        maybeCloseAfterLast();
       } catch (err) {
         console.warn("[ASR] Failed to parse message:", err);
       }
@@ -250,6 +270,7 @@ export function useASR(): UseASRReturn {
     const ws = wsRef.current;
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
     if (capturePausedRef.current) return;
+    if (stopRequestedRef.current) return;
     if (connectingRef.current) {
       await connectingRef.current;
       return;
@@ -360,9 +381,35 @@ export function useASR(): UseASRReturn {
   }, [connectWs, ensureWsOpen, fetchToken, teardownAudioGraph]);
 
   const stopASR = useCallback(() => {
-    capturePausedRef.current = false;
-    commitPendingPartial();
-    closeWs(true);
+    capturePausedRef.current = true;
+
+    const ctx = audioCtxRef.current;
+    if (ctx && ctx.state === "running") {
+      void ctx.suspend();
+    }
+
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      stopRequestedRef.current = true;
+      try {
+        ws.send(JSON.stringify({ eof: true }));
+      } catch (err) {
+        console.debug("[ASR] eof send failed", err);
+      }
+
+      if (stopTimeoutRef.current !== null) {
+        window.clearTimeout(stopTimeoutRef.current);
+      }
+      stopTimeoutRef.current = window.setTimeout(() => {
+        stopTimeoutRef.current = null;
+        if (!stopRequestedRef.current) return;
+        commitPendingPartial();
+        closeWs(false);
+      }, STOP_FINAL_WAIT_MS);
+    } else {
+      commitPendingPartial();
+      closeWs(false);
+    }
 
     void teardownAudioGraph();
 
