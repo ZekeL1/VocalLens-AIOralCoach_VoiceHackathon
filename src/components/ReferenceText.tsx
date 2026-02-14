@@ -1,9 +1,15 @@
 import { motion } from "framer-motion";
 
 export const sampleText =
-  " This sentence contains every letter of the English alphabet and is commonly used for typing practice. The quick brown fox jumps over the lazy dog.";
+  " This sentence contains every letter of the English alphabet and is commonly used for typing practice. The quick brown fox jumps over the lazy dog. ";
 
-const ReferenceText = () => {
+interface ReferenceTextProps {
+  text: string;
+  onGenerate: () => void;
+  isGenerating: boolean;
+}
+
+const ReferenceText = ({ text, onGenerate, isGenerating }: ReferenceTextProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -16,6 +22,14 @@ const ReferenceText = () => {
         <span className="themed-kicker font-display text-xs tracking-[0.3em] uppercase text-primary neon-text">
           Reference Text
         </span>
+        <button
+          type="button"
+          onClick={onGenerate}
+          disabled={isGenerating}
+          className="themed-action-btn ml-2 px-3 py-1 rounded-md border border-border bg-card/70 text-[11px] tracking-[0.14em] uppercase hover:border-primary disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {isGenerating ? "Generating..." : "Generate"}
+        </button>
         <div className="h-px flex-1 bg-gradient-to-l from-primary/60 to-transparent" />
       </div>
 
@@ -27,7 +41,7 @@ const ReferenceText = () => {
         <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary rounded-br-sm" />
 
         <p className="themed-copy text-lg md:text-xl leading-relaxed text-card-foreground font-light tracking-wide">
-          {sampleText}
+          {text}
         </p>
       </div>
     </motion.div>
