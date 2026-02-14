@@ -1,6 +1,7 @@
 export type TokenDiff = {
   word: string;
   status: "match" | "miss" | "extra";
+  confidence: number | null;
 };
 
 type Mismatch = { ref?: string; hyp?: string };
@@ -13,7 +14,11 @@ const tokenize = (s: string) =>
     .split(/\s+/)
     .filter(Boolean);
 
-export function diffWords(reference: string, hypothesis: string) {
+export function diffWords(
+  reference: string,
+  hypothesis: string,
+  hypothesisConfidences: Array<number | null> = []
+) {
   const ref = tokenize(reference);
   const hyp = tokenize(hypothesis);
 
@@ -71,23 +76,26 @@ export function diffWords(reference: string, hypothesis: string) {
   let hi = 0;
   for (const op of ops) {
     if (op === "match") {
-      const h = hyp[hi++];
+      const h = hyp[hi];
+      const confidence = normalizeConfidence(hypothesisConfidences[hi]);
+      hi++;
       ri++;
-      tokens.push({ word: h, status: "match" });
+      tokens.push({ word: h, status: "match", confidence });
       matches++;
       continue;
     }
     if (op === "sub") {
       const r = ref[ri++];
-      const h = hyp[hi++];
-      tokens.push({ word: h, status: "miss" });
+      const h = hyp[hi];
+      hi++;
+      tokens.push({ word: h, status: "miss", confidence: null });
       mismatches.push({ ref: r, hyp: h });
       misses++;
       continue;
     }
     if (op === "ins") {
       const h = hyp[hi++];
-      tokens.push({ word: h, status: "extra" });
+      tokens.push({ word: h, status: "extra", confidence: null });
       mismatches.push({ hyp: h });
       extras++;
       continue;
@@ -99,6 +107,12 @@ export function diffWords(reference: string, hypothesis: string) {
   const spokenTotal = matches + misses + extras;
   const accuracy = spokenTotal > 0 ? (matches / spokenTotal) * 100 : 0;
   return { tokens, accuracy, mismatches };
+}
+
+function normalizeConfidence(value: number | null | undefined) {
+  if (typeof value !== "number" || Number.isNaN(value)) return null;
+  if (value > 1) return Math.max(0, Math.min(1, value / 100));
+  return Math.max(0, Math.min(1, value));
 }
 
 const phonemeRules: Array<{

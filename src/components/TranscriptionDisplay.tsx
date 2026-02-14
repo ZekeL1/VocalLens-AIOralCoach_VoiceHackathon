@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 interface TranscriptionDisplayProps {
   transcript: string;
   partialTranscript: string;
-  tokens: { word: string; status: "match" | "miss" | "extra" }[];
+  tokens: { word: string; status: "match" | "miss" | "extra"; confidence: number | null }[];
   isConnected: boolean;
   isRecording: boolean;
 }
@@ -49,13 +49,17 @@ const TranscriptionDisplay = ({
                     key={idx}
                     className={
                       t.status === "match"
-                        ? "text-primary font-medium"
-                        : t.status === "miss"
-                        ? "text-destructive font-semibold"
-                        : "text-muted-foreground"
+                        ? "font-medium"
+                        : "text-destructive font-semibold"
                     }
+                    style={t.status === "match" ? { color: colorFromConfidence(t.confidence) } : undefined}
                   >
                     {t.word}
+                    {t.status === "match" && t.confidence !== null && (
+                      <span className="ml-1 text-[10px] align-super text-muted-foreground opacity-70">
+                        {formatConfidence(t.confidence)}
+                      </span>
+                    )}
                     {idx < tokens.length - 1 ? " " : ""}
                   </span>
                 ))}
@@ -100,3 +104,18 @@ const TranscriptionDisplay = ({
 };
 
 export default TranscriptionDisplay;
+
+function colorFromConfidence(confidence: number | null) {
+  if (confidence === null) return "hsl(142 70% 45%)";
+
+  const percent = confidence <= 1 ? confidence * 100 : confidence;
+  const clamped = Math.max(0, Math.min(100, percent));
+  const ratio = clamped / 100;
+  const hue = ratio * 142;
+  return `hsl(${hue.toFixed(1)} 80% 52%)`;
+}
+
+function formatConfidence(confidence: number) {
+  const percent = confidence <= 1 ? confidence * 100 : confidence;
+  return `${Math.round(Math.max(0, Math.min(100, percent)))}%`;
+}

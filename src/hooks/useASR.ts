@@ -6,11 +6,21 @@ interface ASRResult {
   is_final: boolean;
   is_last?: boolean;
   session_id?: string;
+  words?: ASRWord[];
+}
+
+interface ASRWord {
+  word?: string;
+  text?: string;
+  confidence?: number;
+  start?: number;
+  end?: number;
 }
 
 export interface UseASRReturn {
   transcript: string;
   partialTranscript: string;
+  wordConfidences: Array<number | null>;
   isConnected: boolean;
   audioBuffers: Float32Array[];
   audioDuration: number;
@@ -45,6 +55,7 @@ const NO_TRANSCRIPT_TIMEOUT_MS = 6000;
 export function useASR(): UseASRReturn {
   const [transcript, setTranscript] = useState("");
   const [partialTranscript, setPartialTranscript] = useState("");
+  const [wordConfidences, setWordConfidences] = useState<Array<number | null>>([]);
   const [isConnected, setIsConnected] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -57,6 +68,7 @@ export function useASR(): UseASRReturn {
 
   const audioBuffersRef = useRef<Float32Array[]>([]);
   const transcriptRef = useRef("");
+  const wordConfidencesRef = useRef<Array<number | null>>([]);
   const partialRef = useRef("");
 
   const [audioBuffers, setAudioBuffers] = useState<Float32Array[]>([]);
@@ -114,7 +126,7 @@ export function useASR(): UseASRReturn {
       url.searchParams.set("language", "en");
       url.searchParams.set("encoding", "linear16");
       url.searchParams.set("sample_rate", String(SAMPLE_RATE));
-      url.searchParams.set("word_timestamps", "false");
+      url.searchParams.set("word_timestamps", "true");
       url.searchParams.set("full_transcript", "false");
 
       const ws = new WebSocket(url.toString());
@@ -127,6 +139,7 @@ export function useASR(): UseASRReturn {
           if (pausedRef.current) return;
 
           const result: ASRResult = JSON.parse(event.data);
+          logWordConfidences(result);
 
           if (result.is_final) {
             const finalText = (result.transcript || "").trim();
@@ -169,11 +182,19 @@ export function useASR(): UseASRReturn {
             lastPartialRef.current = "";
             lastTranscriptUpdateAtRef.current = Date.now();
 
-            setTranscript((prev) => {
-              const merged = mergeTranscript(prev, finalText);
-              transcriptRef.current = merged;
-              return merged;
-            });
+            const previousTranscript = transcriptRef.current;
+            const previousConfidences = wordConfidencesRef.current;
+            const finalWords = extractWordConfidences(result.words, finalText);
+            const merged = mergeTranscript(previousTranscript, finalText);
+            const mergedConfidences = mergeWordConfidences(
+              previousTranscript,
+              previousConfidences,
+              finalWords
+            );
+            transcriptRef.current = merged;
+            wordConfidencesRef.current = mergedConfidences;
+            setTranscript(merged);
+            setWordConfidences(mergedConfidences);
 
             partialRef.current = "";
             setPartialTranscript("");
@@ -244,7 +265,9 @@ export function useASR(): UseASRReturn {
 
       setPartialTranscript("");
       setTranscript("");
+      setWordConfidences([]);
       transcriptRef.current = "";
+      wordConfidencesRef.current = [];
       partialRef.current = "";
 
       lastFinalRef.current = "";
@@ -449,11 +472,16 @@ export function useASR(): UseASRReturn {
   const pauseASR = useCallback(() => {
     const pendingPartial = partialRef.current.trim();
     if (pendingPartial) {
-      setTranscript((prev) => {
-        const merged = mergeTranscript(prev, pendingPartial);
-        transcriptRef.current = merged;
-        return merged;
-      });
+      const merged = mergeTranscript(transcriptRef.current, pendingPartial);
+      const mergedConfidences = mergeWordConfidences(
+        transcriptRef.current,
+        wordConfidencesRef.current,
+        tokenize(pendingPartial).map((word) => ({ word, confidence: null }))
+      );
+      transcriptRef.current = merged;
+      wordConfidencesRef.current = mergedConfidences;
+      setTranscript(merged);
+      setWordConfidences(mergedConfidences);
       lastFinalRef.current = pendingPartial;
       partialRef.current = "";
     }
@@ -495,7 +523,9 @@ export function useASR(): UseASRReturn {
   const resetTranscript = useCallback(() => {
     setTranscript("");
     setPartialTranscript("");
+    setWordConfidences([]);
     transcriptRef.current = "";
+    wordConfidencesRef.current = [];
     partialRef.current = "";
     lastFinalRef.current = "";
     lastPartialRef.current = "";
@@ -520,6 +550,7 @@ export function useASR(): UseASRReturn {
   return {
     transcript,
     partialTranscript,
+    wordConfidences,
     isConnected,
     audioBuffers,
     audioDuration,
@@ -583,6 +614,99 @@ function normalizeText(s: string): string {
     .replace(/[^a-z0-9\s]/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function tokenize(s: string): string[] {
+  const normalized = normalizeText(s);
+  return normalized ? normalized.split(" ") : [];
+}
+
+function normalizeConfidence(value: number | null | undefined): number | null {
+  if (typeof value !== "number" || Number.isNaN(value)) return null;
+  if (value > 1) return Math.max(0, Math.min(1, value / 100));
+  return Math.max(0, Math.min(1, value));
+}
+
+function extractWordConfidences(words: ASRWord[] | undefined, fallbackText: string) {
+  if (!Array.isArray(words) || words.length === 0) {
+    return tokenize(fallbackText).map((word) => ({ word, confidence: null as number | null }));
+  }
+
+  const output: Array<{ word: string; confidence: number | null }> = [];
+  for (const item of words) {
+    const tokenText = item.word ?? item.text ?? "";
+    const parts = tokenize(tokenText);
+    if (!parts.length) continue;
+    const confidence = normalizeConfidence(item.confidence);
+    for (const part of parts) {
+      output.push({ word: part, confidence });
+    }
+  }
+
+  if (output.length > 0) return output;
+  return tokenize(fallbackText).map((word) => ({ word, confidence: null as number | null }));
+}
+
+function mergeWordConfidences(
+  previousTranscript: string,
+  previousConfidences: Array<number | null>,
+  incoming: Array<{ word: string; confidence: number | null }>
+) {
+  const prevWords = tokenize(previousTranscript);
+  const prevConfs = alignConfidences(prevWords.length, previousConfidences);
+  const nextWords = incoming.map((item) => item.word);
+  const nextConfs = incoming.map((item) => item.confidence);
+
+  if (!prevWords.length) return nextConfs;
+  if (!nextWords.length) return prevConfs;
+
+  if (containsWordSequence(prevWords, nextWords)) {
+    return prevConfs;
+  }
+
+  if (containsWordSequence(nextWords, prevWords)) {
+    return nextConfs;
+  }
+
+  const max = Math.min(prevWords.length, nextWords.length);
+  let overlap = 0;
+  for (let size = max; size > 0; size--) {
+    if (isWordArrayEqual(prevWords.slice(-size), nextWords.slice(0, size))) {
+      overlap = size;
+      break;
+    }
+  }
+
+  if (overlap > 0) {
+    return [...prevConfs, ...nextConfs.slice(overlap)];
+  }
+
+  return [...prevConfs, ...nextConfs];
+}
+
+function alignConfidences(length: number, confidences: Array<number | null>) {
+  if (confidences.length === length) return [...confidences];
+  if (confidences.length > length) return confidences.slice(0, length);
+  return [...confidences, ...Array.from({ length: length - confidences.length }, () => null)];
+}
+
+function isWordArrayEqual(a: string[], b: string[]) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+function containsWordSequence(container: string[], content: string[]) {
+  if (!container.length || !content.length || content.length > container.length) return false;
+  const maxStart = container.length - content.length;
+  for (let start = 0; start <= maxStart; start++) {
+    if (isWordArrayEqual(container.slice(start, start + content.length), content)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function isSameNormalized(a: string, b: string): boolean {
@@ -657,4 +781,31 @@ function wordSimilarity(a: string, b: string): number {
     if (setB.has(w)) common++;
   }
   return common / Math.max(setA.size, setB.size);
+}
+
+function logWordConfidences(result: ASRResult) {
+  if (!Array.isArray(result.words) || result.words.length === 0) return;
+
+  const rows = result.words
+    .map((word, index) => {
+      const token = word.word ?? word.text ?? "";
+      const confidence = typeof word.confidence === "number" ? word.confidence : null;
+      return {
+        index,
+        word: token,
+        confidence,
+        confidencePercent: confidence === null ? null : Number((confidence * 100).toFixed(1)),
+        start: typeof word.start === "number" ? Number(word.start.toFixed(3)) : null,
+        end: typeof word.end === "number" ? Number(word.end.toFixed(3)) : null,
+        isFinal: result.is_final,
+      };
+    })
+    .filter((row) => row.word || row.confidence !== null);
+
+  if (!rows.length) return;
+  console.groupCollapsed(
+    `[ASR word confidence] ${result.is_final ? "final" : "partial"} (${rows.length})`
+  );
+  console.table(rows);
+  console.groupEnd();
 }

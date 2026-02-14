@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 export const sampleText =
-  "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the English alphabet and is commonly used for typing practice.";
+  " This sentence contains every letter of the English alphabet and is commonly used for typing practice. The quick brown fox jumps over the lazy dog.LALALALALALALALALLALALA";
 
 const ReferenceText = () => {
   return (

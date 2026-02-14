@@ -21,6 +21,7 @@ const Index = () => {
   const {
     transcript,
     partialTranscript,
+    wordConfidences,
     isConnected,
     audioBuffers,
     audioDuration,
@@ -31,12 +32,11 @@ const Index = () => {
     resetTranscript,
   } = useASR();
 
-  const hasSpeech = transcript.trim().length > 0 || partialTranscript.trim().length > 0;
-  const liveHypothesis = `${transcript} ${partialTranscript}`.trim();
-  const analysis = hasSpeech
-    ? diffWords(sampleText, liveHypothesis)
+  const hasFinalSpeech = transcript.trim().length > 0;
+  const analysis = hasFinalSpeech
+    ? diffWords(sampleText, transcript, wordConfidences)
     : { tokens: [], accuracy: 0, mismatches: [] };
-  const hint = hasSpeech ? pickPhonemeHint(analysis.mismatches) : null;
+  const hint = hasFinalSpeech ? pickPhonemeHint(analysis.mismatches) : null;
 
   const resetSession = useCallback(() => {
     stopASR();
@@ -135,7 +135,7 @@ const Index = () => {
           isConnected={isConnected}
           isRecording={isRecording}
         />
-        <AnalysisDashboard accuracy={hasSpeech ? analysis.accuracy : null} hint={hint} />
+        <AnalysisDashboard accuracy={hasFinalSpeech ? analysis.accuracy : null} hint={hint} />
         <Waveform
           theme={theme}
           isRecording={isRecording}
