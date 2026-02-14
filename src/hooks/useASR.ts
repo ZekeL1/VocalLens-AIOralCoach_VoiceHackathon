@@ -32,6 +32,7 @@ export interface UseASRReturn {
 }
 
 const SAMPLE_RATE = 16000;
+const PARTIAL_IDLE_COMMIT_MS = 2200;
 const WS_URL =
   import.meta.env.DEV
     ? `ws://${location.host}/asr-ws/api/v1/lightning/get_text`
@@ -40,57 +41,31 @@ const WS_URL =
 // Keep last ~120s of audio buffers in memory
 const MAX_SAMPLES = SAMPLE_RATE * 120;
 
-// Endpointing params (adaptive VAD + hard guards)
-const RMS_MIN_THRESHOLD = 0.0015;
-const NOISE_FLOOR_MIN = 0.0005;
-const NOISE_FLOOR_ALPHA = 0.08;
-const SPEECH_START_MULTIPLIER = 3.0;
-const SPEECH_END_MULTIPLIER = 2.0;
-const SPEECH_FRAMES_TO_START = 2;
-const SILENCE_FRAMES_TO_EOF = 10; // ~1.28s with 2048/16k
-const SILENCE_FRAMES_CLEAR_PARTIAL = 8;
-const MAX_UTTERANCE_MS = 12000;
-const NO_TRANSCRIPT_TIMEOUT_MS = 6000;
-
 export function useASR(): UseASRReturn {
   const [transcript, setTranscript] = useState("");
   const [partialTranscript, setPartialTranscript] = useState("");
   const [wordConfidences, setWordConfidences] = useState<Array<number | null>>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [audioBuffers, setAudioBuffers] = useState<Float32Array[]>([]);
+  const [audioDuration, setAudioDuration] = useState(0);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const connectingRef = useRef<Promise<void> | null>(null);
+  const capturePausedRef = useRef(false);
+  const partialCommitTimerRef = useRef<number | null>(null);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
 
-  const audioBuffersRef = useRef<Float32Array[]>([]);
   const transcriptRef = useRef("");
-  const wordConfidencesRef = useRef<Array<number | null>>([]);
   const partialRef = useRef("");
+  const wordConfidencesRef = useRef<Array<number | null>>([]);
+  const audioBuffersRef = useRef<Float32Array[]>([]);
 
-  const [audioBuffers, setAudioBuffers] = useState<Float32Array[]>([]);
-  const [audioDuration, setAudioDuration] = useState(0);
-
-  // Controls
-  const pausedRef = useRef(false);
-  const connectingRef = useRef<Promise<void> | null>(null);
-
-  // Anti-repeat / dedupe
-  const lastFinalRef = useRef("");
-  const lastPartialRef = useRef("");
-  const recentFinalsRef = useRef<string[]>([]);
-
-  // Endpointing / VAD state
-  const noiseFloorRef = useRef(RMS_MIN_THRESHOLD);
-  const speechFramesRef = useRef(0);
-  const silenceFramesRef = useRef(0);
-  const inUtteranceRef = useRef(false);
-  const eofSentRef = useRef(false);
-  const utteranceStartedAtRef = useRef(0);
-  const lastTranscriptUpdateAtRef = useRef(0);
+  const lastFinalNormalizedRef = useRef("");
+  const lastPartialNormalizedRef = useRef("");
 
   const fetchToken = useCallback(async (): Promise<string> => {
     const { data, error } = await supabase.functions.invoke("get-asr-token");
@@ -99,6 +74,11 @@ export function useASR(): UseASRReturn {
   }, []);
 
   const closeWs = useCallback((sendEof: boolean) => {
+    if (partialCommitTimerRef.current !== null) {
+      window.clearTimeout(partialCommitTimerRef.current);
+      partialCommitTimerRef.current = null;
+    }
+
     const ws = wsRef.current;
     if (!ws) return;
 
@@ -106,139 +86,170 @@ export function useASR(): UseASRReturn {
       if (sendEof && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ eof: true }));
       }
-    } catch {}
+    } catch (err) {
+      console.debug("[ASR] eof send failed", err);
+    }
 
     try {
       ws.close();
-    } catch {}
+    } catch (err) {
+      console.debug("[ASR] ws close failed", err);
+    }
 
     wsRef.current = null;
     setIsConnected(false);
   }, []);
 
-  const connectWs = useCallback(
-    async (token: string) => {
-      // Always close old ws before new one
-      closeWs(false);
+  const commitPendingPartial = useCallback(() => {
+    const pendingPartial = partialRef.current.trim();
+    if (!pendingPartial) return;
+    if (containsNormalized(transcriptRef.current, pendingPartial)) {
+      partialRef.current = "";
+      setPartialTranscript("");
+      return;
+    }
 
-      const url = new URL(WS_URL);
-      url.searchParams.set("authorization", `Bearer ${token}`);
-      url.searchParams.set("language", "en");
-      url.searchParams.set("encoding", "linear16");
-      url.searchParams.set("sample_rate", String(SAMPLE_RATE));
-      url.searchParams.set("word_timestamps", "true");
-      url.searchParams.set("full_transcript", "false");
+    const previousTranscript = transcriptRef.current;
+    const previousConfidences = wordConfidencesRef.current;
+    const merged = mergeTranscript(previousTranscript, pendingPartial);
+    const mergedConfidences = mergeWordConfidences(
+      previousTranscript,
+      previousConfidences,
+      tokenize(pendingPartial).map((word) => ({ word, confidence: null }))
+    );
 
-      const ws = new WebSocket(url.toString());
-      wsRef.current = ws;
+    transcriptRef.current = merged;
+    wordConfidencesRef.current = mergedConfidences;
+    setTranscript(merged);
+    setWordConfidences(mergedConfidences);
+    lastFinalNormalizedRef.current = normalizeText(pendingPartial);
+    lastPartialNormalizedRef.current = "";
+    partialRef.current = "";
+    setPartialTranscript("");
+  }, []);
 
-      ws.onopen = () => setIsConnected(true);
+  const connectWs = useCallback(async (token: string) => {
+    // Always close old ws before new one.
+    closeWs(false);
 
-      ws.onmessage = (event) => {
-        try {
-          if (pausedRef.current) return;
+    const url = new URL(WS_URL);
+    url.searchParams.set("authorization", `Bearer ${token}`);
+    url.searchParams.set("language", "en");
+    url.searchParams.set("encoding", "linear16");
+    url.searchParams.set("sample_rate", String(SAMPLE_RATE));
+    url.searchParams.set("word_timestamps", "true");
+    url.searchParams.set("full_transcript", "false");
 
-          const result: ASRResult = JSON.parse(event.data);
-          logWordConfidences(result);
+    const ws = new WebSocket(url.toString());
+    wsRef.current = ws;
 
-          if (result.is_final) {
-            const finalText = (result.transcript || "").trim();
+    ws.onopen = () => {
+      setIsConnected(true);
+    };
 
-            if (!finalText) {
-              partialRef.current = "";
-              setPartialTranscript("");
-              return;
-            }
+    ws.onmessage = (event) => {
+      try {
+        const result: ASRResult = JSON.parse(event.data);
+        logWordConfidences(result);
 
-            // Stronger: if we already "ended" utterance, ignore late finals
-            if (eofSentRef.current) {
-              setPartialTranscript("");
-              return;
-            }
-
-            // Dedupe guards
-            if (isSameNormalized(finalText, lastFinalRef.current)) {
-              setPartialTranscript("");
-              return;
-            }
-            if (isLoopingFinal(finalText, recentFinalsRef.current)) {
-              setPartialTranscript("");
-              return;
-            }
-            if (isLikelyRepeatedSegment(transcriptRef.current, finalText)) {
-              setPartialTranscript("");
-              return;
-            }
-
-            // Extra tail similarity guard (helps with "Yes." / punctuation variations)
-            const tail = normalizeText(transcriptRef.current).slice(-400);
-            if (tail && wordSimilarity(tail, normalizeText(finalText)) > 0.92) {
-              setPartialTranscript("");
-              return;
-            }
-
-            lastFinalRef.current = finalText;
-            pushRecentFinal(recentFinalsRef.current, finalText);
-            lastPartialRef.current = "";
-            lastTranscriptUpdateAtRef.current = Date.now();
-
-            const previousTranscript = transcriptRef.current;
-            const previousConfidences = wordConfidencesRef.current;
-            const finalWords = extractWordConfidences(result.words, finalText);
-            const merged = mergeTranscript(previousTranscript, finalText);
-            const mergedConfidences = mergeWordConfidences(
-              previousTranscript,
-              previousConfidences,
-              finalWords
-            );
-            transcriptRef.current = merged;
-            wordConfidencesRef.current = mergedConfidences;
-            setTranscript(merged);
-            setWordConfidences(mergedConfidences);
-
+        if (result.is_final) {
+          const finalText = (result.transcript || "").trim();
+          if (!finalText) {
             partialRef.current = "";
             setPartialTranscript("");
-          } else {
-            const partialText = (result.transcript || "").trim();
-            if (!partialText) {
-              lastPartialRef.current = "";
-              partialRef.current = "";
-              setPartialTranscript("");
-              return;
+            if (partialCommitTimerRef.current !== null) {
+              window.clearTimeout(partialCommitTimerRef.current);
+              partialCommitTimerRef.current = null;
             }
-
-            // If we already ended utterance, ignore partials too
-            if (eofSentRef.current) return;
-
-            if (isSameNormalized(partialText, lastPartialRef.current)) return;
-            if (containsNormalized(transcriptRef.current, partialText)) return;
-
-            lastPartialRef.current = partialText;
-            partialRef.current = partialText;
-            lastTranscriptUpdateAtRef.current = Date.now();
-            setPartialTranscript(partialText);
+            return;
           }
-        } catch (e) {
-          console.warn("[ASR] Failed to parse message:", e);
+
+          const finalNormalized = normalizeText(finalText);
+          const previousTranscript = transcriptRef.current;
+          const merged = mergeTranscript(previousTranscript, finalText);
+
+          lastFinalNormalizedRef.current = finalNormalized;
+          lastPartialNormalizedRef.current = "";
+
+          const previousConfidences = wordConfidencesRef.current;
+          const finalWords = extractWordConfidences(result.words, finalText);
+          const mergedConfidences = mergeWordConfidences(
+            previousTranscript,
+            previousConfidences,
+            finalWords
+          );
+
+          transcriptRef.current = merged;
+          wordConfidencesRef.current = mergedConfidences;
+          setTranscript(merged);
+          setWordConfidences(mergedConfidences);
+
+          partialRef.current = "";
+          setPartialTranscript("");
+          if (partialCommitTimerRef.current !== null) {
+            window.clearTimeout(partialCommitTimerRef.current);
+            partialCommitTimerRef.current = null;
+          }
+          return;
         }
-      };
 
-      ws.onerror = (e) => console.error("[ASR] WebSocket error:", e);
+        const partialText = (result.transcript || "").trim();
+        if (!partialText) {
+          partialRef.current = "";
+          lastPartialNormalizedRef.current = "";
+          setPartialTranscript("");
+          if (partialCommitTimerRef.current !== null) {
+            window.clearTimeout(partialCommitTimerRef.current);
+            partialCommitTimerRef.current = null;
+          }
+          return;
+        }
 
-      ws.onclose = () => {
-        setIsConnected(false);
-        // If server closes after eof, get ready for next utterance
-        // (We keep audio running; next voice will reconnect)
-        if (wsRef.current === ws) wsRef.current = null;
-      };
-    },
-    [closeWs]
-  );
+        const partialNormalized = normalizeText(partialText);
+        if (partialNormalized === lastPartialNormalizedRef.current) return;
+
+        lastPartialNormalizedRef.current = partialNormalized;
+        partialRef.current = partialText;
+        setPartialTranscript(partialText);
+        if (partialCommitTimerRef.current !== null) {
+          window.clearTimeout(partialCommitTimerRef.current);
+        }
+        partialCommitTimerRef.current = window.setTimeout(() => {
+          partialCommitTimerRef.current = null;
+          const ws = wsRef.current;
+          const wsAlive =
+            !!ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING);
+          // Do not prematurely freeze text during active streaming.
+          if (!capturePausedRef.current && wsAlive) return;
+          commitPendingPartial();
+        }, PARTIAL_IDLE_COMMIT_MS);
+      } catch (err) {
+        console.warn("[ASR] Failed to parse message:", err);
+      }
+    };
+
+    ws.onerror = (event) => {
+      console.error("[ASR] WebSocket error:", event);
+    };
+
+    ws.onclose = (event) => {
+      console.debug("[ASR] ws closed", {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean,
+      });
+      if (partialRef.current.trim()) {
+        commitPendingPartial();
+      }
+      setIsConnected(false);
+      if (wsRef.current === ws) wsRef.current = null;
+    };
+  }, [closeWs, commitPendingPartial]);
 
   const ensureWsOpen = useCallback(async () => {
     const ws = wsRef.current;
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
-    if (pausedRef.current) return;
+    if (capturePausedRef.current) return;
     if (connectingRef.current) {
       await connectingRef.current;
       return;
@@ -256,296 +267,152 @@ export function useASR(): UseASRReturn {
     }
   }, [connectWs, fetchToken]);
 
-  const startASR = useCallback(
-    async (stream: MediaStream) => {
-      // Reset state
-      audioBuffersRef.current = [];
-      setAudioBuffers([]);
-      setAudioDuration(0);
-
-      setPartialTranscript("");
-      setTranscript("");
-      setWordConfidences([]);
-      transcriptRef.current = "";
-      wordConfidencesRef.current = [];
-      partialRef.current = "";
-
-      lastFinalRef.current = "";
-      lastPartialRef.current = "";
-      recentFinalsRef.current = [];
-
-      silenceFramesRef.current = 0;
-      speechFramesRef.current = 0;
-      noiseFloorRef.current = RMS_MIN_THRESHOLD;
-      inUtteranceRef.current = false;
-      eofSentRef.current = false;
-      utteranceStartedAtRef.current = 0;
-      lastTranscriptUpdateAtRef.current = Date.now();
-
-      pausedRef.current = false;
-      streamRef.current = stream;
-
-      // Connect WS
-      const token = await fetchToken();
-      await connectWs(token);
-
-      // Setup audio
-      // Close any existing audio graph
-      if (processorRef.current) {
-        try { processorRef.current.disconnect(); } catch {}
-        processorRef.current = null;
-      }
-      if (sourceRef.current) {
-        try { sourceRef.current.disconnect(); } catch {}
-        sourceRef.current = null;
-      }
-      if (gainRef.current) {
-        try { gainRef.current.disconnect(); } catch {}
-        gainRef.current = null;
-      }
-      if (audioCtxRef.current) {
-        try { await audioCtxRef.current.close(); } catch {}
-        audioCtxRef.current = null;
-      }
-
-      const audioCtx = new AudioContext({ sampleRate: SAMPLE_RATE });
-      audioCtxRef.current = audioCtx;
-
-      const source = audioCtx.createMediaStreamSource(stream);
-      sourceRef.current = source;
-
-      // IMPORTANT: avoid direct processor -> destination (can cause weird behavior)
-      const gain = audioCtx.createGain();
-      gain.gain.value = 0;
-      gainRef.current = gain;
-
-      const bufferSize = 2048;
-      const processor = audioCtx.createScriptProcessor(bufferSize, 1, 1);
-      processorRef.current = processor;
-
-      processor.onaudioprocess = async (e) => {
-        if (pausedRef.current) return;
-
-        const input = e.inputBuffer.getChannelData(0);
-        const rms = computeRms(input);
-        const now = Date.now();
-
-        if (!inUtteranceRef.current) {
-          const prevNoise = Math.max(NOISE_FLOOR_MIN, noiseFloorRef.current);
-          // Update floor only when frame looks like background/noise.
-          if (rms < prevNoise * SPEECH_START_MULTIPLIER) {
-            noiseFloorRef.current = Math.max(
-              NOISE_FLOOR_MIN,
-              prevNoise * (1 - NOISE_FLOOR_ALPHA) + rms * NOISE_FLOOR_ALPHA
-            );
-          }
-        }
-
-        const speechStartThreshold = Math.max(
-          RMS_MIN_THRESHOLD,
-          noiseFloorRef.current * SPEECH_START_MULTIPLIER
-        );
-        const speechEndThreshold = Math.max(
-          RMS_MIN_THRESHOLD,
-          noiseFloorRef.current * SPEECH_END_MULTIPLIER
-        );
-
-        const endUtterance = () => {
-          if (eofSentRef.current) return;
-          eofSentRef.current = true;
-          setPartialTranscript("");
-          closeWs(true);
-          inUtteranceRef.current = false;
-          silenceFramesRef.current = 0;
-          speechFramesRef.current = 0;
-          utteranceStartedAtRef.current = 0;
-        };
-
-        // Not in utterance: wait for stable speech frames.
-        if (!inUtteranceRef.current) {
-          if (rms >= speechStartThreshold) {
-            speechFramesRef.current += 1;
-          } else {
-            speechFramesRef.current = 0;
-          }
-
-          if (speechFramesRef.current < SPEECH_FRAMES_TO_START) {
-            return;
-          }
-
-          inUtteranceRef.current = true;
-          eofSentRef.current = false;
-          silenceFramesRef.current = 0;
-          speechFramesRef.current = 0;
-          utteranceStartedAtRef.current = now;
-          lastTranscriptUpdateAtRef.current = now;
-          await ensureWsOpen();
-        }
-
-        if (rms < speechEndThreshold) {
-          silenceFramesRef.current += 1;
-
-          if (silenceFramesRef.current > SILENCE_FRAMES_CLEAR_PARTIAL) {
-            setPartialTranscript("");
-          }
-
-          if (silenceFramesRef.current > SILENCE_FRAMES_TO_EOF) {
-            endUtterance();
-          }
-
-          return;
-        }
-
-        silenceFramesRef.current = 0;
-
-        if (utteranceStartedAtRef.current > 0) {
-          const utteranceAge = now - utteranceStartedAtRef.current;
-          const noTranscriptAge = now - lastTranscriptUpdateAtRef.current;
-          if (utteranceAge > MAX_UTTERANCE_MS || noTranscriptAge > NO_TRANSCRIPT_TIMEOUT_MS) {
-            endUtterance();
-            return;
-          }
-        }
-
-        // Keep audio buffers
-        const copy = new Float32Array(input.length);
-        copy.set(input);
-        pushWithCap(audioBuffersRef.current, copy, MAX_SAMPLES);
-
-        // Send to server
-        const ws = wsRef.current;
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          const pcm16 = float32ToInt16(input);
-          ws.send(pcm16 as unknown as ArrayBuffer);
-        }
-      };
-
-      source.connect(processor);
-      processor.connect(gain);
-      gain.connect(audioCtx.destination);
-    },
-    [connectWs, ensureWsOpen, fetchToken, closeWs]
-  );
-
-  const stopASR = useCallback(() => {
-    pausedRef.current = false;
-    partialRef.current = "";
-
-    // close ws (send eof to flush, then close)
-    closeWs(true);
-
-    // teardown audio
+  const teardownAudioGraph = useCallback(async () => {
     if (processorRef.current) {
-      try { processorRef.current.disconnect(); } catch {}
+      try {
+        processorRef.current.disconnect();
+      } catch (err) {
+        console.debug("[ASR] processor disconnect failed", err);
+      }
       processorRef.current = null;
     }
     if (sourceRef.current) {
-      try { sourceRef.current.disconnect(); } catch {}
+      try {
+        sourceRef.current.disconnect();
+      } catch (err) {
+        console.debug("[ASR] source disconnect failed", err);
+      }
       sourceRef.current = null;
     }
     if (gainRef.current) {
-      try { gainRef.current.disconnect(); } catch {}
+      try {
+        gainRef.current.disconnect();
+      } catch (err) {
+        console.debug("[ASR] gain disconnect failed", err);
+      }
       gainRef.current = null;
     }
     if (audioCtxRef.current) {
-      try { audioCtxRef.current.close(); } catch {}
+      try {
+        await audioCtxRef.current.close();
+      } catch (err) {
+        console.debug("[ASR] audio context close failed", err);
+      }
       audioCtxRef.current = null;
     }
+  }, []);
 
-    // finalize buffers info
-    const buffers = audioBuffersRef.current;
-    setAudioBuffers([...buffers]);
-    const totalSamples = buffers.reduce((s, b) => s + b.length, 0);
-    setAudioDuration(totalSamples / SAMPLE_RATE);
+  const startASR = useCallback(async (stream: MediaStream) => {
+    // Reset session state
+    audioBuffersRef.current = [];
+    setAudioBuffers([]);
+    setAudioDuration(0);
 
-    // reset endpoint flags
-    silenceFramesRef.current = 0;
-    speechFramesRef.current = 0;
-    noiseFloorRef.current = RMS_MIN_THRESHOLD;
-    inUtteranceRef.current = false;
-    eofSentRef.current = false;
-    utteranceStartedAtRef.current = 0;
+    setTranscript("");
+    transcriptRef.current = "";
+    setPartialTranscript("");
+    partialRef.current = "";
+    setWordConfidences([]);
+    wordConfidencesRef.current = [];
+    lastFinalNormalizedRef.current = "";
+    lastPartialNormalizedRef.current = "";
 
-    setIsConnected(false);
-  }, [closeWs]);
+    capturePausedRef.current = false;
 
-  const pauseASR = useCallback(() => {
-    const pendingPartial = partialRef.current.trim();
-    if (pendingPartial) {
-      const merged = mergeTranscript(transcriptRef.current, pendingPartial);
-      const mergedConfidences = mergeWordConfidences(
-        transcriptRef.current,
-        wordConfidencesRef.current,
-        tokenize(pendingPartial).map((word) => ({ word, confidence: null }))
-      );
-      transcriptRef.current = merged;
-      wordConfidencesRef.current = mergedConfidences;
-      setTranscript(merged);
-      setWordConfidences(mergedConfidences);
-      lastFinalRef.current = pendingPartial;
-      partialRef.current = "";
-    }
+    // Build WS and audio graph
+    const token = await fetchToken();
+    await connectWs(token);
+    await teardownAudioGraph();
 
-    pausedRef.current = true;
+    const audioCtx = new AudioContext({ sampleRate: SAMPLE_RATE });
+    audioCtxRef.current = audioCtx;
 
-    // Also stop sending / receiving by closing ws (prevents server late-loop spam)
+    const source = audioCtx.createMediaStreamSource(stream);
+    sourceRef.current = source;
+
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0;
+    gainRef.current = gain;
+
+    const processor = audioCtx.createScriptProcessor(2048, 1, 1);
+    processorRef.current = processor;
+
+    processor.onaudioprocess = async (event) => {
+      if (capturePausedRef.current) return;
+
+      const input = event.inputBuffer.getChannelData(0);
+      await ensureWsOpen();
+
+      const copy = new Float32Array(input.length);
+      copy.set(input);
+      pushWithCap(audioBuffersRef.current, copy, MAX_SAMPLES);
+
+      const ws = wsRef.current;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        const pcm16 = float32ToInt16(input);
+        ws.send(pcm16 as unknown as ArrayBuffer);
+      }
+    };
+
+    source.connect(processor);
+    processor.connect(gain);
+    gain.connect(audioCtx.destination);
+  }, [connectWs, ensureWsOpen, fetchToken, teardownAudioGraph]);
+
+  const stopASR = useCallback(() => {
+    capturePausedRef.current = false;
+    commitPendingPartial();
     closeWs(true);
 
-    // Suspend audio context (keeps graph)
+    void teardownAudioGraph();
+
+    const buffers = audioBuffersRef.current;
+    setAudioBuffers([...buffers]);
+    const totalSamples = buffers.reduce((sum, chunk) => sum + chunk.length, 0);
+    setAudioDuration(totalSamples / SAMPLE_RATE);
+
+    setIsConnected(false);
+  }, [closeWs, commitPendingPartial, teardownAudioGraph]);
+
+  const pauseASR = useCallback(() => {
+    capturePausedRef.current = true;
     const ctx = audioCtxRef.current;
     if (ctx && ctx.state === "running") {
-      ctx.suspend();
+      void ctx.suspend();
     }
-
-    setPartialTranscript("");
-  }, [closeWs]);
+  }, []);
 
   const resumeASR = useCallback(async () => {
-    pausedRef.current = false;
-
-    // reset endpoint flags so we start clean
-    silenceFramesRef.current = 0;
-    speechFramesRef.current = 0;
-    noiseFloorRef.current = RMS_MIN_THRESHOLD;
-    inUtteranceRef.current = false;
-    eofSentRef.current = false;
-    utteranceStartedAtRef.current = 0;
-    lastTranscriptUpdateAtRef.current = Date.now();
-
+    capturePausedRef.current = false;
     const ctx = audioCtxRef.current;
     if (ctx && ctx.state === "suspended") {
       await ctx.resume();
     }
-
-    // We DON'T reconnect immediately; we'll reconnect when voice resumes (ensureWsOpen in onaudioprocess)
-  }, []);
+    await ensureWsOpen();
+  }, [ensureWsOpen]);
 
   const resetTranscript = useCallback(() => {
     setTranscript("");
     setPartialTranscript("");
     setWordConfidences([]);
-    transcriptRef.current = "";
-    wordConfidencesRef.current = [];
-    partialRef.current = "";
-    lastFinalRef.current = "";
-    lastPartialRef.current = "";
-    recentFinalsRef.current = [];
 
-    silenceFramesRef.current = 0;
-    speechFramesRef.current = 0;
-    noiseFloorRef.current = RMS_MIN_THRESHOLD;
-    inUtteranceRef.current = false;
-    eofSentRef.current = false;
-    utteranceStartedAtRef.current = 0;
-    lastTranscriptUpdateAtRef.current = Date.now();
+    transcriptRef.current = "";
+    partialRef.current = "";
+    wordConfidencesRef.current = [];
+    lastFinalNormalizedRef.current = "";
+    lastPartialNormalizedRef.current = "";
   }, []);
 
   useEffect(() => {
     return () => {
-      try { closeWs(false); } catch {}
-      try { audioCtxRef.current?.close(); } catch {}
+      if (partialCommitTimerRef.current !== null) {
+        window.clearTimeout(partialCommitTimerRef.current);
+        partialCommitTimerRef.current = null;
+      }
+      closeWs(false);
+      void teardownAudioGraph();
     };
-  }, [closeWs]);
+  }, [closeWs, teardownAudioGraph]);
 
   return {
     transcript,
@@ -562,20 +429,18 @@ export function useASR(): UseASRReturn {
   };
 }
 
-// -------------------- helpers --------------------
-
 function float32ToInt16(float32: Float32Array): Int16Array {
   const int16 = new Int16Array(float32.length);
   for (let i = 0; i < float32.length; i++) {
     const s = Math.max(-1, Math.min(1, float32[i]));
-    int16[i] = s < 0 ? (s * 0x8000) : (s * 0x7fff);
+    int16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
   }
   return int16;
 }
 
 function pushWithCap(target: Float32Array[], chunk: Float32Array, maxSamples: number) {
   target.push(chunk);
-  let total = target.reduce((s, b) => s + b.length, 0);
+  let total = target.reduce((sum, block) => sum + block.length, 0);
   while (total > maxSamples && target.length > 1) {
     const removed = target.shift();
     total -= removed?.length || 0;
@@ -583,42 +448,43 @@ function pushWithCap(target: Float32Array[], chunk: Float32Array, maxSamples: nu
 }
 
 function mergeTranscript(prev: string, next: string): string {
-  const a = prev.trim();
-  const b = next.trim();
-  if (!a) return b;
-  if (!b) return a;
-  if (a === b) return a;
-  if (containsNormalized(a, b)) return a;
-  if (containsNormalized(b, a)) return b;
-  if (b.startsWith(a)) return b;
-  if (a.startsWith(b)) return a;
+  const a = tokenize(prev);
+  const b = tokenize(next);
+  if (!a.length) return b.join(" ");
+  if (!b.length) return a.join(" ");
+  if (isWordArrayEqual(a, b)) return a.join(" ");
+  if (containsWordSequence(a, b)) return a.join(" ");
+  if (containsWordSequence(b, a)) return b.join(" ");
 
-  const lowerA = a.toLowerCase();
-  const lowerB = b.toLowerCase();
-  const max = Math.min(lowerA.length, lowerB.length);
-
+  const max = Math.min(a.length, b.length);
   let overlap = 0;
-  for (let i = max; i > 0; i--) {
-    if (lowerA.slice(-i) === lowerB.slice(0, i)) {
-      overlap = i;
+  for (let size = max; size > 0; size--) {
+    if (isWordArrayEqual(a.slice(-size), b.slice(0, size))) {
+      overlap = size;
       break;
     }
   }
-  if (overlap > 0) return `${a}${b.slice(overlap)}`;
-  return `${a} ${b}`;
+  return [...a, ...b.slice(overlap)].join(" ");
 }
 
-function normalizeText(s: string): string {
-  return s
+function normalizeText(text: string): string {
+  return text
     .toLowerCase()
     .replace(/[^a-z0-9\s]/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function tokenize(s: string): string[] {
-  const normalized = normalizeText(s);
+function tokenize(text: string): string[] {
+  const normalized = normalizeText(text);
   return normalized ? normalized.split(" ") : [];
+}
+
+function containsNormalized(container: string, content: string): boolean {
+  const a = normalizeText(container);
+  const b = normalizeText(content);
+  if (!a || !b) return false;
+  return a.includes(b);
 }
 
 function normalizeConfidence(value: number | null | undefined): number | null {
@@ -660,13 +526,8 @@ function mergeWordConfidences(
   if (!prevWords.length) return nextConfs;
   if (!nextWords.length) return prevConfs;
 
-  if (containsWordSequence(prevWords, nextWords)) {
-    return prevConfs;
-  }
-
-  if (containsWordSequence(nextWords, prevWords)) {
-    return nextConfs;
-  }
+  if (containsWordSequence(prevWords, nextWords)) return prevConfs;
+  if (containsWordSequence(nextWords, prevWords)) return nextConfs;
 
   const max = Math.min(prevWords.length, nextWords.length);
   let overlap = 0;
@@ -677,10 +538,7 @@ function mergeWordConfidences(
     }
   }
 
-  if (overlap > 0) {
-    return [...prevConfs, ...nextConfs.slice(overlap)];
-  }
-
+  if (overlap > 0) return [...prevConfs, ...nextConfs.slice(overlap)];
   return [...prevConfs, ...nextConfs];
 }
 
@@ -709,80 +567,6 @@ function containsWordSequence(container: string[], content: string[]) {
   return false;
 }
 
-function isSameNormalized(a: string, b: string): boolean {
-  return normalizeText(a) === normalizeText(b);
-}
-
-function containsNormalized(container: string, content: string): boolean {
-  const a = normalizeText(container);
-  const b = normalizeText(content);
-  if (!a || !b) return false;
-  return a.includes(b);
-}
-
-function isLikelyRepeatedSegment(existing: string, incoming: string): boolean {
-  const current = normalizeText(existing);
-  const next = normalizeText(incoming);
-  if (!current || !next) return false;
-
-  if (current.includes(next)) return true;
-
-  const tail = current.slice(-Math.max(240, next.length * 2));
-  if (tail.includes(next)) return true;
-
-  const nextWords = Array.from(new Set(next.split(" ").filter(Boolean)));
-  const tailWords = new Set(tail.split(" ").filter(Boolean));
-  if (nextWords.length < 6) return false;
-
-  let common = 0;
-  for (const w of nextWords) {
-    if (tailWords.has(w)) common++;
-  }
-  return common / nextWords.length >= 0.85;
-}
-
-function computeRms(input: Float32Array): number {
-  let sum = 0;
-  for (let i = 0; i < input.length; i++) {
-    const s = input[i];
-    sum += s * s;
-  }
-  return Math.sqrt(sum / input.length);
-}
-
-function pushRecentFinal(target: string[], text: string) {
-  const n = normalizeText(text);
-  if (!n) return;
-  target.push(n);
-  if (target.length > 12) target.shift();
-}
-
-function isLoopingFinal(incoming: string, recent: string[]): boolean {
-  const n = normalizeText(incoming);
-  if (!n) return false;
-  const words = n.split(" ").filter(Boolean);
-  if (words.length < 8) return false;
-
-  for (let i = recent.length - 1; i >= 0; i--) {
-    if (wordSimilarity(n, recent[i]) >= 0.9) return true;
-  }
-  return false;
-}
-
-function wordSimilarity(a: string, b: string): number {
-  const wa = a.split(" ").filter(Boolean);
-  const wb = b.split(" ").filter(Boolean);
-  if (!wa.length || !wb.length) return 0;
-  const setA = new Set(wa);
-  const setB = new Set(wb);
-
-  let common = 0;
-  for (const w of setA) {
-    if (setB.has(w)) common++;
-  }
-  return common / Math.max(setA.size, setB.size);
-}
-
 function logWordConfidences(result: ASRResult) {
   if (!Array.isArray(result.words) || result.words.length === 0) return;
 
@@ -803,9 +587,8 @@ function logWordConfidences(result: ASRResult) {
     .filter((row) => row.word || row.confidence !== null);
 
   if (!rows.length) return;
-  console.groupCollapsed(
-    `[ASR word confidence] ${result.is_final ? "final" : "partial"} (${rows.length})`
-  );
+  console.groupCollapsed(`[ASR word confidence] ${result.is_final ? "final" : "partial"} (${rows.length})`);
   console.table(rows);
   console.groupEnd();
 }
+
