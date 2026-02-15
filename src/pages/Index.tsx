@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import ReferenceText from "@/components/ReferenceText";
 import Waveform from "@/components/Waveform";
@@ -63,6 +63,33 @@ const Index = () => {
     ? diffWords(referenceText, transcript, wordConfidences)
     : { tokens: [], accuracy: 0, mismatches: [] };
   const hint = hasFinalSpeech ? pickPhonemeHint(analysis.mismatches) : null;
+  const displayedAdvice = isEvaluatingPronunciation
+    ? "Analyzing pronunciation with Groq..."
+    : finishSummary.hint || "No advice available yet. Try another recording.";
+  const adviceSections = useMemo(() => {
+    const raw = displayedAdvice.replace(/\r/g, "").trim();
+    if (!raw) return [];
+    if (raw === "Analyzing pronunciation with Groq...") return [raw];
+
+    const normalized = raw
+      .replace(/\n{3,}/g, "\n\n")
+      .replace(/\s*\n\s*/g, "\n")
+      .trim();
+
+    const withSectionBreaks = normalized.replace(
+      /(\b(?:overall assessment|strengths?|issues? to fix|actionable drills?)\b\s*[:：-]?)/gi,
+      "\n$1"
+    );
+    const bySectionLabel = withSectionBreaks
+      .split(/\n+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const sections = (bySectionLabel.length > 1 ? bySectionLabel : normalized.split(/\n\n+/))
+      .map((s) => s.replace(/^\d+[\)\.\-:]\s*/, "").trim())
+      .filter(Boolean);
+    return sections.length ? sections : [raw];
+  }, [displayedAdvice]);
 
   const resetSession = useCallback(() => {
     stopASR();
@@ -522,11 +549,13 @@ const Index = () => {
               <p className="themed-kicker text-xs uppercase tracking-[0.16em] text-muted-foreground">
                 Advice
               </p>
-              <p className="mt-1 text-sm text-card-foreground">
-                {isEvaluatingPronunciation
-                  ? "Analyzing pronunciation with Groq..."
-                  : finishSummary.hint || "No advice available yet. Try another recording."}
-              </p>
+              <div className="mt-1 space-y-2 text-sm text-card-foreground">
+                {adviceSections.map((section, index) => (
+                  <p key={`${section.slice(0, 24)}-${index}`} className="leading-relaxed">
+                    {section}
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
         </DialogContent>
