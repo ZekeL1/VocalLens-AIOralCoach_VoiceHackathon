@@ -27,6 +27,8 @@ export function diffWords(
   let matches = 0;
   let misses = 0;
   let extras = 0;
+  let matchedConfidenceSum = 0;
+  let matchedConfidenceCount = 0;
 
   const n = ref.length;
   const m = hyp.length;
@@ -77,10 +79,15 @@ export function diffWords(
   for (const op of ops) {
     if (op === "match") {
       const h = hyp[hi];
-      const confidence = normalizeConfidence(hypothesisConfidences[hi]);
+      const rawConfidence = normalizeConfidence(hypothesisConfidences[hi]);
+      const confidence = compressConfidence(rawConfidence);
       hi++;
       ri++;
       tokens.push({ word: h, status: "match", confidence });
+      if (confidence !== null) {
+        matchedConfidenceSum += confidence;
+        matchedConfidenceCount++;
+      }
       matches++;
       continue;
     }
@@ -102,17 +109,59 @@ export function diffWords(
     }
     const r = ref[ri++];
     mismatches.push({ ref: r });
+    misses++;
   }
 
-  const spokenTotal = matches + misses + extras;
-  const accuracy = spokenTotal > 0 ? (matches / spokenTotal) * 100 : 0;
+  const weightedErrors = (misses + extras)* 1.25;
+  const baseAccuracy =
+    matches + weightedErrors > 0 ? matches / (matches + weightedErrors) : 0;
+  const strictAccuracy = strictScoreFromBase(baseAccuracy);
+  const avgMatchedConfidence =
+    matchedConfidenceCount > 0 ? matchedConfidenceSum / matchedConfidenceCount : null;
+  const confidenceAdjusted = applyConfidenceToScore(strictAccuracy, avgMatchedConfidence);
+  const accuracy = applyHighScoreCurve(confidenceAdjusted);
   return { tokens, accuracy, mismatches };
+}
+
+function strictScoreFromBase(baseAccuracy: number) {
+  const clamped = Math.max(0, Math.min(1, baseAccuracy));
+  const strict = Math.pow(clamped, 1.45);
+  return strict * 100;
+}
+
+function applyConfidenceToScore(score: number, avgConfidence: number | null) {
+  if (avgConfidence === null) return score;
+  // Multiplier range: 0.55 - 1.00
+  const multiplier = 0.55 + 0.45 * Math.max(0, Math.min(1, avgConfidence));
+  return Math.max(0, Math.min(100, score * multiplier));
+}
+
+function applyHighScoreCurve(score: number) {
+  let curved = Math.max(0, Math.min(100, score));
+  // Progressive compression: higher score bands are increasingly harder.
+  curved = compressAbove(curved, 70, 0.78);
+  curved = compressAbove(curved, 85, 0.62);
+  curved = compressAbove(curved, 93, 0.4);
+  return curved;
+}
+
+function compressAbove(value: number, pivot: number, factor: number) {
+  if (value <= pivot) return value;
+  return pivot + (value - pivot) * factor;
 }
 
 function normalizeConfidence(value: number | null | undefined) {
   if (typeof value !== "number" || Number.isNaN(value)) return null;
   if (value > 1) return Math.max(0, Math.min(1, value / 100));
   return Math.max(0, Math.min(1, value));
+}
+
+function compressConfidence(value: number | null) {
+  if (value === null) return null;
+  // Preserve perfect confidence at word-level.
+  if (value >= 0.999999) return 1;
+  // Word-level confidence shown in UI uses the same compressed scale as scoring.
+  return Math.max(0, Math.min(1, value - 0.12));
 }
 
 const phonemeRules: Array<{
@@ -137,4 +186,3 @@ export function pickPhonemeHint(mismatches: Mismatch[]) {
   }
   return "Overall, your pronunciation is quite good. Keep up the great work and stay consistent.";
 }
-

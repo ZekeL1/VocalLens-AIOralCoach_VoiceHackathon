@@ -108,11 +108,16 @@ export default TranscriptionDisplay;
 function colorFromConfidence(confidence: number | null) {
   if (confidence === null) return "hsl(142 70% 45%)";
 
-  const percent = confidence <= 1 ? confidence * 100 : confidence;
-  const clamped = Math.max(0, Math.min(100, percent));
-  const ratio = clamped / 100;
-  const hue = ratio * 142;
-  return `hsl(${hue.toFixed(1)} 80% 52%)`;
+  const value = confidence <= 1 ? confidence * 100 : confidence;
+  const percent = Math.max(0, Math.min(100, value));
+
+  if (percent >= 98) return "hsl(142 82% 52%)"; // very high: bright green
+  if (percent >= 95) return "hsl(130 84% 52%)"; // high: green
+  if (percent >= 92) return "hsl(110 82% 52%)"; // still green
+  if (percent >= 88) return "hsl(86 88% 54%)";  // yellow-green
+  if (percent >= 82) return "hsl(58 92% 58%)";  // yellow
+  if (percent >= 74) return "hsl(34 90% 58%)";  // yellow-orange
+  return "hsl(8 86% 58%)"; // red-orange
 }
 
 function formatConfidence(confidence: number) {
