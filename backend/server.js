@@ -39,44 +39,40 @@ app.post("/api/generate-reference-text", async (req, res) => {
     "Generate ONE short English speaking-practice sentence.",
     `Target ${lengthWords} words, CEFR level ${level.toUpperCase()}.`,
     "Keep it natural and easy to read aloud in one breath.",
+    "avoid contractions.",
     includePairs
       ? "Include a few common pronunciation challenge sounds like th, v/w, r/l, or ending -ng."
-      : "Avoid tongue-twister style wording.",
+      : "Avoid tongue-twister style wording and contractions.",
     "Output plain sentence only. No quotes, no numbering, no explanation.",
   ].join(" ");
 
   try {
-    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${GROQ_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        temperature: 0.7,
-        max_tokens: 120,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You generate concise spoken-English practice content. Return only the final sentence text.",
-          },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
-
-    if (!groqRes.ok) {
-      const detail = await groqRes.text();
-      res.status(502).json({ error: "Groq request failed", detail });
+    const firstPass = await requestSentenceFromGroq(prompt, GROQ_API_KEY, GROQ_MODEL);
+    if (!firstPass.ok) {
+      res.status(502).json({ error: "Groq request failed", detail: firstPass.detail });
       return;
     }
 
-    const data = await groqRes.json();
-    const text = sanitizeSentence(String(data?.choices?.[0]?.message?.content || ""));
+    let text = sanitizeSentence(firstPass.text);
     if (!text) {
       res.status(502).json({ error: "Model returned empty text" });
+      return;
+    }
+
+    if (containsContraction(text)) {
+      const retryPrompt =
+        `${prompt} IMPORTANT: Return a sentence with ZERO contractions and ZERO apostrophes.`;
+      const secondPass = await requestSentenceFromGroq(retryPrompt, GROQ_API_KEY, GROQ_MODEL);
+      if (secondPass.ok) {
+        const retried = sanitizeSentence(secondPass.text);
+        if (retried && !containsContraction(retried)) {
+          text = retried;
+        }
+      }
+    }
+
+    if (containsContraction(text)) {
+      res.status(502).json({ error: "Model returned contractions; please retry." });
       return;
     }
 
@@ -103,6 +99,44 @@ function sanitizeSentence(input) {
     .replace(/^["'`\s]+|["'`\s]+$/g, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function containsContraction(text) {
+  const s = String(text).toLowerCase();
+  return /\b(?:\w+n't|\w+'re|\w+'ve|\w+'ll|\w+'d|i'm|it's|that's|there's|here's|what's|who's|where's|when's|why's|how's|let's)\b/.test(
+    s
+  );
+}
+
+async function requestSentenceFromGroq(prompt, apiKey, model) {
+  const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.7,
+      max_tokens: 120,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You generate concise spoken-English practice content. Return only one sentence and do not use contractions.",
+        },
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
+
+  if (!groqRes.ok) {
+    return { ok: false, detail: await groqRes.text() };
+  }
+
+  const data = await groqRes.json();
+  const text = String(data?.choices?.[0]?.message?.content || "");
+  return { ok: true, text };
 }
 
 function loadEnvFile(filePath) {
