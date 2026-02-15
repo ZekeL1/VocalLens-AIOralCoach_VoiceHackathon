@@ -286,9 +286,15 @@ app.post("/api/evaluate-pronunciation-azure", async (req, res) => {
   const cacheKey = buildAnalysisCacheKey(audioHash, referenceText);
   const cached = getCachedAnalysis(cacheKey);
   if (cached) {
+    console.log("[AzurePA] cache hit", {
+      cacheKey,
+      source: cached?.source || null,
+      overallScore: cached?.overallScore ?? null,
+    });
     res.json({
       ...cached,
       cacheHit: true,
+      rawAzureApi: null,
     });
     return;
   }
@@ -338,15 +344,75 @@ app.post("/api/evaluate-pronunciation-azure", async (req, res) => {
     }
 
     const data = await azureRes.json();
-    const nbest = Array.isArray(data?.NBest) && data.NBest.length ? data.NBest[0] : null;
-    const pa = nbest?.PronunciationAssessment || {};
-    const words = Array.isArray(nbest?.Words) ? nbest.Words : [];
+    console.log("[AzurePA] raw response:");
+    console.log(JSON.stringify(data, null, 2));
+    const nbestList = Array.isArray(data?.NBest)
+      ? data.NBest
+      : Array.isArray(data?.nBest)
+        ? data.nBest
+        : [];
+    const nbest = pickBestNBest(nbestList);
+    const pa = nbest?.PronunciationAssessment || nbest?.pronunciationAssessment || {};
+    const words = Array.isArray(nbest?.Words)
+      ? nbest.Words
+      : Array.isArray(nbest?.words)
+        ? nbest.words
+        : Array.isArray(data?.Words)
+          ? data.Words
+          : Array.isArray(data?.words)
+            ? data.words
+            : [];
+
+    const accuracyCandidates = [
+      pa?.AccuracyScore,
+      nbest?.AccuracyScore,
+      nbest?.accuracyScore,
+      data?.AccuracyScore,
+      data?.accuracyScore,
+    ];
+    const fluencyCandidates = [
+      pa?.FluencyScore,
+      nbest?.FluencyScore,
+      nbest?.fluencyScore,
+      data?.FluencyScore,
+      data?.fluencyScore,
+    ];
+    const completenessCandidates = [
+      pa?.CompletenessScore,
+      nbest?.CompletenessScore,
+      nbest?.completenessScore,
+      data?.CompletenessScore,
+      data?.completenessScore,
+    ];
+    const prosodyCandidates = [
+      pa?.ProsodyScore,
+      nbest?.ProsodyScore,
+      nbest?.prosodyScore,
+      data?.ProsodyScore,
+      data?.prosodyScore,
+    ];
+    const accuracyRaw = pickBestScore(...accuracyCandidates);
+    const fluencyRaw = pickBestScore(...fluencyCandidates);
+    const completenessRaw = pickBestScore(...completenessCandidates);
+    const prosodyRaw = pickBestScore(...prosodyCandidates);
+    console.log("[AzurePA] score candidates", {
+      accuracyCandidates,
+      fluencyCandidates,
+      completenessCandidates,
+      prosodyCandidates,
+      picked: {
+        accuracyRaw,
+        fluencyRaw,
+        completenessRaw,
+        prosodyRaw,
+      },
+    });
 
     const hasCoreScores =
-      Number.isFinite(Number(pa?.AccuracyScore)) ||
-      Number.isFinite(Number(pa?.FluencyScore)) ||
-      Number.isFinite(Number(pa?.CompletenessScore)) ||
-      Number.isFinite(Number(pa?.ProsodyScore));
+      accuracyRaw !== null ||
+      fluencyRaw !== null ||
+      completenessRaw !== null ||
+      prosodyRaw !== null;
     if (!hasCoreScores && words.length === 0) {
       const result = buildAzureFallbackResult({
         reason: "azure_no_metrics",
@@ -365,17 +431,25 @@ app.post("/api/evaluate-pronunciation-azure", async (req, res) => {
     }
 
     const wordAccuracyScores = words
-      .map((w) => Number(w?.PronunciationAssessment?.AccuracyScore))
-      .filter((s) => Number.isFinite(s));
-
-    const accuracyRaw = finiteOrNull(pa?.AccuracyScore);
-    const fluencyRaw = finiteOrNull(pa?.FluencyScore);
-    const completenessRaw = finiteOrNull(pa?.CompletenessScore);
-    const prosodyRaw = finiteOrNull(pa?.ProsodyScore);
+      .map((w) => pickBestScore(
+        w?.PronunciationAssessment?.AccuracyScore,
+        w?.pronunciationAssessment?.AccuracyScore,
+        w?.AccuracyScore,
+        w?.accuracyScore,
+        w?.accuracy
+      ))
+      .filter((s) => s !== null);
 
     const wordAccuracyAvg = finiteOrNull(avg(wordAccuracyScores));
-    const overallCandidate = accuracyRaw ?? wordAccuracyAvg;
-    const fluencyCandidate = fluencyRaw ?? prosodyRaw ?? completenessRaw ?? wordAccuracyAvg;
+    const preferPositive = (primary, fallback) => {
+      if (primary === null || primary === undefined) return fallback;
+      if (primary > 0) return primary;
+      if (fallback !== null && fallback !== undefined && fallback > 0) return fallback;
+      return primary;
+    };
+    const overallCandidate = preferPositive(accuracyRaw, wordAccuracyAvg);
+    const fluencySeed = fluencyRaw ?? prosodyRaw ?? completenessRaw;
+    const fluencyCandidate = preferPositive(fluencySeed, wordAccuracyAvg);
 
     if (overallCandidate === null || fluencyCandidate === null) {
       const result = buildAzureFallbackResult({
@@ -406,13 +480,23 @@ app.post("/api/evaluate-pronunciation-azure", async (req, res) => {
     const prosodyScore = clampScore(prosodyRaw, 0, 100, (overallScore + fluencyScore) / 2);
     const clarityScore = clampScore(avg(wordAccuracyScores), 0, 100, overallScore);
 
-    const phonemes = words.flatMap((w) => (Array.isArray(w?.Phonemes) ? w.Phonemes : []));
+    const phonemes = words.flatMap((w) => {
+      if (Array.isArray(w?.Phonemes)) return w.Phonemes;
+      if (Array.isArray(w?.phonemes)) return w.phonemes;
+      return [];
+    });
     const consonantScores = [];
     const vowelScores = [];
     for (const p of phonemes) {
-      const score = Number(p?.PronunciationAssessment?.AccuracyScore);
-      if (!Number.isFinite(score)) continue;
-      const phone = String(p?.Phoneme || "").toUpperCase();
+      const score = pickBestScore(
+        p?.PronunciationAssessment?.AccuracyScore,
+        p?.pronunciationAssessment?.AccuracyScore,
+        p?.AccuracyScore,
+        p?.accuracyScore,
+        p?.accuracy
+      );
+      if (score === null) continue;
+      const phone = String(p?.Phoneme || p?.phoneme || "").toUpperCase();
       if (isVowelPhone(phone)) vowelScores.push(score);
       else consonantScores.push(score);
     }
@@ -422,19 +506,43 @@ app.post("/api/evaluate-pronunciation-azure", async (req, res) => {
 
     const weakWords = words
       .filter((w) => {
-        const s = Number(w?.PronunciationAssessment?.AccuracyScore);
-        const err = String(w?.PronunciationAssessment?.ErrorType || "").toLowerCase();
-        return (Number.isFinite(s) && s < 70) || (err && err !== "none");
+        const s = pickBestScore(
+          w?.PronunciationAssessment?.AccuracyScore,
+          w?.pronunciationAssessment?.AccuracyScore,
+          w?.AccuracyScore,
+          w?.accuracyScore,
+          w?.accuracy
+        );
+        const err = String(
+          w?.PronunciationAssessment?.ErrorType ||
+          w?.pronunciationAssessment?.ErrorType ||
+          w?.ErrorType ||
+          w?.errorType ||
+          ""
+        ).toLowerCase();
+        return (s !== null && s < 70) || (err && err !== "none");
       })
       .slice(0, 6)
-      .map((w) => String(w?.Word || "").toLowerCase())
+      .map((w) => String(w?.Word || w?.word || "").toLowerCase())
       .filter(Boolean);
 
     const wordScores = words
       .map((w, index) => {
-        const word = String(w?.Word || "").toLowerCase().trim();
-        const accuracy = finiteOrNull(w?.PronunciationAssessment?.AccuracyScore);
-        const errorTypeRaw = String(w?.PronunciationAssessment?.ErrorType || "").trim();
+        const word = String(w?.Word || w?.word || "").toLowerCase().trim();
+        const accuracy = pickBestScore(
+          w?.PronunciationAssessment?.AccuracyScore,
+          w?.pronunciationAssessment?.AccuracyScore,
+          w?.AccuracyScore,
+          w?.accuracyScore,
+          w?.accuracy
+        );
+        const errorTypeRaw = String(
+          w?.PronunciationAssessment?.ErrorType ||
+          w?.pronunciationAssessment?.ErrorType ||
+          w?.ErrorType ||
+          w?.errorType ||
+          ""
+        ).trim();
         const errorType = errorTypeRaw && errorTypeRaw.toLowerCase() !== "none" ? errorTypeRaw : null;
         return {
           index,
@@ -453,9 +561,15 @@ app.post("/api/evaluate-pronunciation-azure", async (req, res) => {
     const weakPhonemes = phonemes
       .map((p) => ({
         phone: String(p?.Phoneme || ""),
-        score: Number(p?.PronunciationAssessment?.AccuracyScore),
+        score: pickBestScore(
+          p?.PronunciationAssessment?.AccuracyScore,
+          p?.pronunciationAssessment?.AccuracyScore,
+          p?.AccuracyScore,
+          p?.accuracyScore,
+          p?.accuracy
+        ),
       }))
-      .filter((x) => x.phone && Number.isFinite(x.score) && x.score < 70)
+      .filter((x) => x.phone && x.score !== null && x.score < 70)
       .sort((a, b) => a.score - b.score)
       .slice(0, 5)
       .map((x) => x.phone.toUpperCase());
@@ -482,32 +596,6 @@ app.post("/api/evaluate-pronunciation-azure", async (req, res) => {
       .filter(Boolean)
       .join("\n");
 
-    if (GROQ_API_KEY) {
-      const groqCoaching = await requestGroqCoachingFromAzureMetrics({
-        apiKey: GROQ_API_KEY,
-        model: GROQ_MODEL,
-        referenceText,
-        displayText: String(data?.DisplayText || ""),
-        scores: {
-          overallScore,
-          clarityScore,
-          prosodyScore,
-          consonantScore,
-          vowelScore,
-          fluencyScore,
-          completenessScore,
-        },
-        weakWords,
-        weakPhonemes,
-      });
-
-      if (groqCoaching.ok && groqCoaching.value) {
-        criticalPoints = groqCoaching.value.criticalPoints;
-        actionDrill = groqCoaching.value.actionDrill;
-        feedback = groqCoaching.value.feedback;
-      }
-    }
-
     const result = {
       source: isPartialAzure ? "azure_partial" : "azure",
       feedback,
@@ -530,13 +618,35 @@ app.post("/api/evaluate-pronunciation-azure", async (req, res) => {
         recognitionStatus: data?.RecognitionStatus || null,
         displayText: data?.DisplayText || null,
       },
+      azureDebug: {
+        nbestCount: nbestList.length,
+        selectedNBestIndex: nbest ? nbestList.indexOf(nbest) : -1,
+        scoreCandidates: {
+          accuracy: accuracyCandidates,
+          fluency: fluencyCandidates,
+          completeness: completenessCandidates,
+          prosody: prosodyCandidates,
+        },
+        picked: {
+          accuracyRaw,
+          fluencyRaw,
+          completenessRaw,
+          prosodyRaw,
+          wordAccuracyAvg,
+        },
+      },
     };
-    res.json(finalizeAzureAnalysis({
+    const finalized = finalizeAzureAnalysis({
       cacheKey,
       wavBuffer,
       audioHash,
       result,
-    }));
+    });
+    res.json({
+      ...finalized,
+      cacheHit: false,
+      rawAzureApi: data,
+    });
   } catch (error) {
     const result = buildAzureFallbackResult({
       reason: "azure_exception",
@@ -631,6 +741,63 @@ function clampScore(value, min, max, fallback) {
 function finiteOrNull(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
+}
+
+function toScoreCandidate(value) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "boolean") return null;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    value = trimmed;
+  }
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  if (n > 0 && n <= 1) return n * 100;
+  return n;
+}
+
+function pickBestScore(...values) {
+  const finiteValues = values
+    .map((value) => toScoreCandidate(value))
+    .filter((n) => n !== null);
+  if (!finiteValues.length) return null;
+  const positiveValues = finiteValues.filter((n) => n > 0);
+  if (positiveValues.length) return Math.max(...positiveValues);
+  // Azure sometimes returns duplicate score fields where one path is 0 and another has the real value.
+  // Pick the highest finite score to avoid false zero-selection.
+  return Math.max(...finiteValues);
+}
+
+function pickBestNBest(nbestList) {
+  if (!Array.isArray(nbestList) || !nbestList.length) return null;
+  let best = nbestList[0];
+  let bestValue = -1;
+
+  for (const candidate of nbestList) {
+    const pa = candidate?.PronunciationAssessment || candidate?.pronunciationAssessment || {};
+    const candidateScore = pickBestScore(
+      pa?.AccuracyScore,
+      pa?.FluencyScore,
+      pa?.CompletenessScore,
+      pa?.ProsodyScore,
+      candidate?.AccuracyScore,
+      candidate?.accuracyScore,
+      candidate?.FluencyScore,
+      candidate?.fluencyScore,
+      candidate?.CompletenessScore,
+      candidate?.completenessScore,
+      candidate?.ProsodyScore,
+      candidate?.prosodyScore
+    );
+    const rankingScore = candidateScore === null ? -1 : candidateScore;
+    if (rankingScore > bestValue) {
+      bestValue = rankingScore;
+      best = candidate;
+    }
+  }
+
+  return best;
 }
 
 function buildAzureFallbackResult(input) {
@@ -756,13 +923,6 @@ function sanitizeSentence(input) {
     .trim();
 }
 
-function sanitizeSentenceBlock(input) {
-  return String(input)
-    .replace(/\r/g, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
 function extractJsonObject(raw) {
   const text = String(raw || "").trim();
   const start = text.indexOf("{");
@@ -862,85 +1022,6 @@ async function requestSentenceFromGroq(prompt, apiKey, model) {
   const data = await groqRes.json();
   const text = String(data?.choices?.[0]?.message?.content || "");
   return { ok: true, text };
-}
-
-async function requestGroqCoachingFromAzureMetrics(input) {
-  const prompt = [
-    "You are a strict English pronunciation coach.",
-    "Use the provided Azure metrics and weak sounds to generate concise coaching JSON only.",
-    "No markdown, no extra text.",
-    "JSON schema:",
-    "{",
-    '  "critical_points": [string, string],',
-    '  "action_drill": string,',
-    '  "feedback": string',
-    "}",
-    "Rules:",
-    "- Focus only on pronunciation weaknesses (sounds, stress, rhythm).",
-    "- critical_points must be specific and non-generic.",
-    "- action_drill must be <= 18 words and directly actionable.",
-    "- feedback must be 2-4 bullet lines, each line starts with '- '.",
-    "",
-    `REFERENCE: ${input.referenceText}`,
-    `ASR_DISPLAY: ${input.displayText || "N/A"}`,
-    `SCORES: ${JSON.stringify(input.scores)}`,
-    `WEAK_WORDS: ${JSON.stringify(input.weakWords)}`,
-    `WEAK_PHONEMES: ${JSON.stringify(input.weakPhonemes)}`,
-  ].join("\n");
-
-  try {
-    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${input.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: input.model,
-        temperature: 0,
-        max_tokens: 240,
-        messages: [
-          {
-            role: "system",
-            content: "Return valid JSON only. Be strict and concrete.",
-          },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
-
-    if (!groqRes.ok) {
-      return { ok: false, detail: await groqRes.text() };
-    }
-
-    const data = await groqRes.json();
-    const raw = String(data?.choices?.[0]?.message?.content || "").trim();
-    const parsed = safeParseJson(extractJsonObject(raw));
-    if (!parsed) {
-      return { ok: false, detail: "Invalid JSON from Groq coaching" };
-    }
-
-    const criticalPoints = Array.isArray(parsed?.critical_points)
-      ? parsed.critical_points.map((x) => sanitizeSentence(String(x))).filter(Boolean).slice(0, 2)
-      : [];
-    const actionDrill = sanitizeSentence(String(parsed?.action_drill || ""));
-    const feedback = sanitizeSentenceBlock(String(parsed?.feedback || ""));
-
-    if (criticalPoints.length < 2 || !actionDrill || !feedback) {
-      return { ok: false, detail: "Missing required coaching fields" };
-    }
-
-    return {
-      ok: true,
-      value: {
-        criticalPoints,
-        actionDrill,
-        feedback,
-      },
-    };
-  } catch (error) {
-    return { ok: false, detail: String(error) };
-  }
 }
 
 function loadEnvFile(filePath) {

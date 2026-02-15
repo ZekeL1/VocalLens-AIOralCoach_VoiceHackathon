@@ -31,5 +31,3645 @@
       "audioUrl": "/saved-audio/c90003216526a045418a73f7c58648388c05c24cc51655f4d11cb86ca1287079.wav",
       "cachedAt": "2026-02-15T04:33:04.854Z"
     }
+  },
+  "08a9ea916457d9c365c31f962b98271f4642ed2ba648ea0d96663668ceaaca8f:the weather forecast for tomorrow is predicting a strong wind and a chance of thunderstorms in the evening": {
+    "createdAt": "2026-02-15T04:38:32.560Z",
+    "result": {
+      "source": "azure_partial",
+      "feedback": "- Pay attention to the correct vowel sound in 'weather'.\n- Focus on the correct stress in 'for'.\n- Repeat after a native speaker to improve fluency.",
+      "overallScore": 0,
+      "axes": {
+        "clarity": 0,
+        "stress_intonation": 0,
+        "consonant_precision": 0,
+        "vowel_quality": 0,
+        "fluency": 0,
+        "completeness": 0
+      },
+      "criticalPoints": [
+        "/wɛðər/",
+        "/fɔr/"
+      ],
+      "actionDrill": "Practice correct pronunciation of /wɛðər/ and /fɔr/ in isolation and in context.",
+      "weakWords": [],
+      "weakWordDetails": [],
+      "wordScores": [],
+      "weakPhonemes": [],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "Weather forecast for tomorrow is predicting a strong and a chance of thunderstorms in the evening."
+      },
+      "audioHash": "08a9ea916457d9c365c31f962b98271f4642ed2ba648ea0d96663668ceaaca8f",
+      "audioFile": "backend\\data\\audio\\08a9ea916457d9c365c31f962b98271f4642ed2ba648ea0d96663668ceaaca8f.wav",
+      "audioUrl": "/saved-audio/08a9ea916457d9c365c31f962b98271f4642ed2ba648ea0d96663668ceaaca8f.wav",
+      "cachedAt": "2026-02-15T04:38:32.560Z"
+    }
+  },
+  "a6e8bb32049da2115eae5ee2d506eda485cd910448b8145cc5e009aff7bd003b:she is very interested in visiting the famous museum and learning about the history of the old paintings": {
+    "createdAt": "2026-02-15T04:53:37.090Z",
+    "result": {
+      "source": "azure_partial",
+      "feedback": "- Weakness: Stress and intonation are flat in key phrases.\n- Weakness: Consonant precision is weak (th/r/l/v/w clusters).\n- Action: Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "overallScore": 0,
+      "axes": {
+        "clarity": 0,
+        "stress_intonation": 0,
+        "consonant_precision": 0,
+        "vowel_quality": 0,
+        "fluency": 0,
+        "completeness": 0
+      },
+      "criticalPoints": [
+        "Stress and intonation are flat in key phrases.",
+        "Consonant precision is weak (th/r/l/v/w clusters)."
+      ],
+      "actionDrill": "Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "weakWords": [],
+      "weakWordDetails": [],
+      "wordScores": [],
+      "weakPhonemes": [],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "Very interested in visiting the famous museum and learning about history of the old paintings."
+      },
+      "audioHash": "a6e8bb32049da2115eae5ee2d506eda485cd910448b8145cc5e009aff7bd003b",
+      "audioFile": "backend\\data\\audio\\a6e8bb32049da2115eae5ee2d506eda485cd910448b8145cc5e009aff7bd003b.wav",
+      "audioUrl": "/saved-audio/a6e8bb32049da2115eae5ee2d506eda485cd910448b8145cc5e009aff7bd003b.wav",
+      "cachedAt": "2026-02-15T04:53:37.090Z"
+    }
+  },
+  "2e858c5ec74316e002d89130838d532bc0e04a7bc63bdd8d8d7231510b16fc2d:the weather forecast said there would be a lot of heavy rain and strong winds tomorrow evening in the city": {
+    "createdAt": "2026-02-15T04:58:54.708Z",
+    "result": {
+      "source": "azure_partial",
+      "feedback": "- Weakness: Stress and intonation are flat in key phrases.\n- Weakness: Consonant precision is weak (th/r/l/v/w clusters).\n- Action: Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "overallScore": 0,
+      "axes": {
+        "clarity": 0,
+        "stress_intonation": 0,
+        "consonant_precision": 0,
+        "vowel_quality": 0,
+        "fluency": 0,
+        "completeness": 0
+      },
+      "criticalPoints": [
+        "Stress and intonation are flat in key phrases.",
+        "Consonant precision is weak (th/r/l/v/w clusters)."
+      ],
+      "actionDrill": "Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "weakWords": [],
+      "weakWordDetails": [],
+      "wordScores": [],
+      "weakPhonemes": [],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "The weather forecast said there would be a lot of heavy rain and strong winds tomorrow evening in the city."
+      },
+      "audioHash": "2e858c5ec74316e002d89130838d532bc0e04a7bc63bdd8d8d7231510b16fc2d",
+      "audioFile": "backend\\data\\audio\\2e858c5ec74316e002d89130838d532bc0e04a7bc63bdd8d8d7231510b16fc2d.wav",
+      "audioUrl": "/saved-audio/2e858c5ec74316e002d89130838d532bc0e04a7bc63bdd8d8d7231510b16fc2d.wav",
+      "cachedAt": "2026-02-15T04:58:54.708Z"
+    }
+  },
+  "5145f05cc597c801efe57c87142dcc9a1f02dbd8b2a35c960d5ed380d9924021:the english teacher asked her students to read loudly and clearly in front of their fellow students in the classroom": {
+    "createdAt": "2026-02-15T05:07:21.949Z",
+    "result": {
+      "source": "azure_partial",
+      "feedback": "- Weakness: Stress and intonation are flat in key phrases.\n- Weakness: Consonant precision is weak (th/r/l/v/w clusters).\n- Action: Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "overallScore": 0,
+      "axes": {
+        "clarity": 0,
+        "stress_intonation": 0,
+        "consonant_precision": 0,
+        "vowel_quality": 0,
+        "fluency": 0,
+        "completeness": 0
+      },
+      "criticalPoints": [
+        "Stress and intonation are flat in key phrases.",
+        "Consonant precision is weak (th/r/l/v/w clusters)."
+      ],
+      "actionDrill": "Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "weakWords": [],
+      "weakWordDetails": [],
+      "wordScores": [],
+      "weakPhonemes": [],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "English teacher asked her students to read loudly and clearly in front of their fellow students in the classroom."
+      },
+      "audioHash": "5145f05cc597c801efe57c87142dcc9a1f02dbd8b2a35c960d5ed380d9924021",
+      "audioFile": "backend\\data\\audio\\5145f05cc597c801efe57c87142dcc9a1f02dbd8b2a35c960d5ed380d9924021.wav",
+      "audioUrl": "/saved-audio/5145f05cc597c801efe57c87142dcc9a1f02dbd8b2a35c960d5ed380d9924021.wav",
+      "cachedAt": "2026-02-15T05:07:21.949Z"
+    }
+  },
+  "81fcd081c0c44c57ddfb5a915122acc67d221ad4d8d2c544b9196a03783d7d21:the therapist helped the patient with her breathing exercises which involved holding her breath for several minutes at a time": {
+    "createdAt": "2026-02-15T05:14:40.018Z",
+    "result": {
+      "source": "azure_partial",
+      "feedback": "- Weakness: Stress and intonation are flat in key phrases.\n- Weakness: Consonant precision is weak (th/r/l/v/w clusters).\n- Action: Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "overallScore": 0,
+      "axes": {
+        "clarity": 0,
+        "stress_intonation": 0,
+        "consonant_precision": 0,
+        "vowel_quality": 0,
+        "fluency": 0,
+        "completeness": 0
+      },
+      "criticalPoints": [
+        "Stress and intonation are flat in key phrases.",
+        "Consonant precision is weak (th/r/l/v/w clusters)."
+      ],
+      "actionDrill": "Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "weakWords": [],
+      "weakWordDetails": [],
+      "wordScores": [],
+      "weakPhonemes": [],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "With her breathing exercises, which involved holding her breath for several minutes at a time."
+      },
+      "audioHash": "81fcd081c0c44c57ddfb5a915122acc67d221ad4d8d2c544b9196a03783d7d21",
+      "audioFile": "backend\\data\\audio\\81fcd081c0c44c57ddfb5a915122acc67d221ad4d8d2c544b9196a03783d7d21.wav",
+      "audioUrl": "/saved-audio/81fcd081c0c44c57ddfb5a915122acc67d221ad4d8d2c544b9196a03783d7d21.wav",
+      "cachedAt": "2026-02-15T05:14:40.018Z"
+    }
+  },
+  "6a0f39fccc458d574c1e4da2b8ab3c9f78ec5b9392b895c56a5cf3120bc4b709:the driver carefully navigated the winding road through the dense forest with slow speed": {
+    "createdAt": "2026-02-15T05:15:48.941Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Stress and intonation are flat in key phrases.\n- Weakness: Vowel shape/length is inconsistent on stressed syllables.\n- Action: Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.\n- Weak words: the, driver, navigated, road, speed",
+      "overallScore": 74,
+      "axes": {
+        "clarity": 71.1,
+        "stress_intonation": 69.4,
+        "consonant_precision": 77.2,
+        "vowel_quality": 70.9,
+        "fluency": 88,
+        "completeness": 79
+      },
+      "criticalPoints": [
+        "Stress and intonation are flat in key phrases.",
+        "Vowel shape/length is inconsistent on stressed syllables."
+      ],
+      "actionDrill": "Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.",
+      "weakWords": [
+        "the",
+        "driver",
+        "navigated",
+        "road",
+        "speed"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 0,
+          "word": "the",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 3,
+          "word": "navigated",
+          "accuracy": 24,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 14,
+          "word": "speed",
+          "accuracy": 26,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 1,
+          "word": "driver",
+          "accuracy": 44,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 7,
+          "word": "road",
+          "accuracy": 69,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "navigated",
+          "accuracy": 70,
+          "errorType": null
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "the",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 1,
+          "word": "driver",
+          "accuracy": 44,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 2,
+          "word": "carefully",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "navigated",
+          "accuracy": 24,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 4,
+          "word": "navigated",
+          "accuracy": 70,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "the",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "winding",
+          "accuracy": 82,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "road",
+          "accuracy": 69,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "through",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "the",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "dense",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "forest",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "with",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "slow",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "speed",
+          "accuracy": 26,
+          "errorType": "Mispronunciation"
+        }
+      ],
+      "weakPhonemes": [
+        "D",
+        "V",
+        "AX",
+        "D",
+        "R"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "Driver carefully navigated navigated the winding Rd. through the dense forest with slow speed."
+      },
+      "audioHash": "6a0f39fccc458d574c1e4da2b8ab3c9f78ec5b9392b895c56a5cf3120bc4b709",
+      "audioFile": "backend\\data\\audio\\6a0f39fccc458d574c1e4da2b8ab3c9f78ec5b9392b895c56a5cf3120bc4b709.wav",
+      "audioUrl": "/saved-audio/6a0f39fccc458d574c1e4da2b8ab3c9f78ec5b9392b895c56a5cf3120bc4b709.wav",
+      "cachedAt": "2026-02-15T05:15:48.941Z"
+    }
+  },
+  "ead3a8474871ca568ef551e40072049cbfe7433828573910f5edc98c2448f8ad:she was very tired after traveling all day and decided to go straight to her bedroom to take a long bath": {
+    "createdAt": "2026-02-15T05:17:11.989Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: B, TH, AE.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Practice TH: think, three, thank slowly; then say full sentence at natural speed.\n- Weak words: long, bath",
+      "overallScore": 97,
+      "axes": {
+        "clarity": 96.2,
+        "stress_intonation": 81.3,
+        "consonant_precision": 91.2,
+        "vowel_quality": 95.9,
+        "fluency": 89,
+        "completeness": 100
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: B, TH, AE.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Practice TH: think, three, thank slowly; then say full sentence at natural speed.",
+      "weakWords": [
+        "long",
+        "bath"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 20,
+          "word": "bath",
+          "accuracy": 88,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 19,
+          "word": "long",
+          "accuracy": 97,
+          "errorType": "Insertion"
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "she",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "was",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 2,
+          "word": "very",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "tired",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "after",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "traveling",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "all",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "day",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "and",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "decided",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "to",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "go",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "straight",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "to",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "her",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "bedroom",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "to",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "take",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "a",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "long",
+          "accuracy": 97,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 20,
+          "word": "bath",
+          "accuracy": 88,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 21,
+          "word": "long",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 22,
+          "word": "bath",
+          "accuracy": 94,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "B",
+        "TH",
+        "AE",
+        "D",
+        "TH"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "She was very tired after traveling all day and decided to go straight to her bedroom to take a long bath. Long bath."
+      },
+      "audioHash": "ead3a8474871ca568ef551e40072049cbfe7433828573910f5edc98c2448f8ad",
+      "audioFile": "backend\\data\\audio\\ead3a8474871ca568ef551e40072049cbfe7433828573910f5edc98c2448f8ad.wav",
+      "audioUrl": "/saved-audio/ead3a8474871ca568ef551e40072049cbfe7433828573910f5edc98c2448f8ad.wav",
+      "cachedAt": "2026-02-15T05:17:11.989Z"
+    }
+  },
+  "4ee219fa87fff2d62c82334dee062c983b0f0f9e7638692d98d36ea92adfc1fd:she was very tired after traveling all day and decided to go straight to her bedroom to take a long bath": {
+    "createdAt": "2026-02-15T05:18:05.666Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: D, D, D.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.",
+      "overallScore": 95,
+      "axes": {
+        "clarity": 94.9,
+        "stress_intonation": 81.3,
+        "consonant_precision": 88.8,
+        "vowel_quality": 95.8,
+        "fluency": 97,
+        "completeness": 100
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: D, D, D.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.",
+      "weakWords": [],
+      "weakWordDetails": [],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "she",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "was",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 2,
+          "word": "very",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "tired",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "after",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "traveling",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "all",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "day",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "and",
+          "accuracy": 82,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "decided",
+          "accuracy": 88,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "to",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "go",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "straight",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "to",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "her",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "bedroom",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "to",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "take",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "a",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "long",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 20,
+          "word": "bath",
+          "accuracy": 97,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "D",
+        "D",
+        "D",
+        "R",
+        "T"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "She was very tired after traveling all day and decided to go straight to her bedroom to take a long bath."
+      },
+      "audioHash": "4ee219fa87fff2d62c82334dee062c983b0f0f9e7638692d98d36ea92adfc1fd",
+      "audioFile": "backend\\data\\audio\\4ee219fa87fff2d62c82334dee062c983b0f0f9e7638692d98d36ea92adfc1fd.wav",
+      "audioUrl": "/saved-audio/4ee219fa87fff2d62c82334dee062c983b0f0f9e7638692d98d36ea92adfc1fd.wav",
+      "cachedAt": "2026-02-15T05:18:05.666Z"
+    }
+  },
+  "87a3831a6fa195a3a2d34ce84c4fc003577faf180d060f66f4b82e3dbbbae6a9:the weather forecast suggests there will be a lot of rain tomorrow evening at around seven o clock in the evening": {
+    "createdAt": "2026-02-15T05:18:51.223Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Stress and intonation are flat in key phrases.\n- Weakness: Consonant precision is weak (th/r/l/v/w clusters).\n- Action: Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.\n- Weak words: weather, rain, tomorrow",
+      "overallScore": 81,
+      "axes": {
+        "clarity": 80.7,
+        "stress_intonation": 67.1,
+        "consonant_precision": 74.2,
+        "vowel_quality": 79.7,
+        "fluency": 81,
+        "completeness": 85
+      },
+      "criticalPoints": [
+        "Stress and intonation are flat in key phrases.",
+        "Consonant precision is weak (th/r/l/v/w clusters)."
+      ],
+      "actionDrill": "Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.",
+      "weakWords": [
+        "weather",
+        "rain",
+        "tomorrow"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 1,
+          "word": "weather",
+          "accuracy": 8,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 11,
+          "word": "tomorrow",
+          "accuracy": 36,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 10,
+          "word": "rain",
+          "accuracy": 38,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 14,
+          "word": "around",
+          "accuracy": 70,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "suggests",
+          "accuracy": 73,
+          "errorType": null
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "the",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "weather",
+          "accuracy": 8,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 2,
+          "word": "forecast",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "suggests",
+          "accuracy": 73,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "there",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "will",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "be",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "a",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "lot",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "of",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "rain",
+          "accuracy": 38,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 11,
+          "word": "tomorrow",
+          "accuracy": 36,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 12,
+          "word": "evening",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "at",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "around",
+          "accuracy": 70,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "seven",
+          "accuracy": 88,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "o'clock",
+          "accuracy": 88,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "in",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "the",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "evening",
+          "accuracy": 91,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "S",
+        "N",
+        "DH",
+        "R",
+        "AX"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "The weather forecast suggests there will be a lot of rain tomorrow evening at around 7:00 in the evening."
+      },
+      "audioHash": "87a3831a6fa195a3a2d34ce84c4fc003577faf180d060f66f4b82e3dbbbae6a9",
+      "audioFile": "backend\\data\\audio\\87a3831a6fa195a3a2d34ce84c4fc003577faf180d060f66f4b82e3dbbbae6a9.wav",
+      "audioUrl": "/saved-audio/87a3831a6fa195a3a2d34ce84c4fc003577faf180d060f66f4b82e3dbbbae6a9.wav",
+      "cachedAt": "2026-02-15T05:18:51.223Z"
+    }
+  },
+  "a10e5a341488b7b1496b6b261348da7a49005bde7e1402f961dcf5183a21a5bd:i am going to visit my uncle who lives in a small village near the river this summer with my friends": {
+    "createdAt": "2026-02-15T05:20:30.725Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Pronunciation is unclear on: i, am, going.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Repeat weak words slowly 3x each: i, am, going.\n- Weak words: i, am, going",
+      "overallScore": 83,
+      "axes": {
+        "clarity": 83,
+        "stress_intonation": 89.5,
+        "consonant_precision": 95.6,
+        "vowel_quality": 96.5,
+        "fluency": 99,
+        "completeness": 86
+      },
+      "criticalPoints": [
+        "Pronunciation is unclear on: i, am, going.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Repeat weak words slowly 3x each: i, am, going.",
+      "weakWords": [
+        "i",
+        "am",
+        "going"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 0,
+          "word": "i",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 1,
+          "word": "am",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 2,
+          "word": "going",
+          "accuracy": 0,
+          "errorType": "Omission"
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "i",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 1,
+          "word": "am",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 2,
+          "word": "going",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 3,
+          "word": "to",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "visit",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "my",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "uncle",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "who",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "lives",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "in",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "a",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "small",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "village",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "near",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "river",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "this",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "summer",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "with",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "my",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 20,
+          "word": "friends",
+          "accuracy": 85,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "To visit my uncle, who lives in a small village near the river this summer with my friends."
+      },
+      "audioHash": "a10e5a341488b7b1496b6b261348da7a49005bde7e1402f961dcf5183a21a5bd",
+      "audioFile": "backend\\data\\audio\\a10e5a341488b7b1496b6b261348da7a49005bde7e1402f961dcf5183a21a5bd.wav",
+      "audioUrl": "/saved-audio/a10e5a341488b7b1496b6b261348da7a49005bde7e1402f961dcf5183a21a5bd.wav",
+      "cachedAt": "2026-02-15T05:20:30.725Z"
+    }
+  },
+  "e975afa3588bb7c1615512c3b3465983df565c7f9253da40a959d84ccf2ffa2b:i am going to visit my uncle who lives in a small village near the river this summer with my friends": {
+    "createdAt": "2026-02-15T05:21:10.183Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: L, NG, L.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.\n- Weak words: with, visit",
+      "overallScore": 88,
+      "axes": {
+        "clarity": 88.8,
+        "stress_intonation": 81.8,
+        "consonant_precision": 87,
+        "vowel_quality": 90.9,
+        "fluency": 96,
+        "completeness": 95
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: L, NG, L.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.",
+      "weakWords": [
+        "with",
+        "visit"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 5,
+          "word": "visit",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 4,
+          "word": "with",
+          "accuracy": 97,
+          "errorType": "Insertion"
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "i",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "am",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 2,
+          "word": "going",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "to",
+          "accuracy": 80,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "with",
+          "accuracy": 97,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 5,
+          "word": "visit",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 6,
+          "word": "my",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "uncle",
+          "accuracy": 82,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "who",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "lives",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "in",
+          "accuracy": 80,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "a",
+          "accuracy": 80,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "small",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "village",
+          "accuracy": 76,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "near",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "river",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "this",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "summer",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "with",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 20,
+          "word": "my",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 21,
+          "word": "friends",
+          "accuracy": 91,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "L",
+        "NG",
+        "L",
+        "IH",
+        "JH"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "I am going to with my uncle who lives in a small village near the river this summer with my friends."
+      },
+      "audioHash": "e975afa3588bb7c1615512c3b3465983df565c7f9253da40a959d84ccf2ffa2b",
+      "audioFile": "backend\\data\\audio\\e975afa3588bb7c1615512c3b3465983df565c7f9253da40a959d84ccf2ffa2b.wav",
+      "audioUrl": "/saved-audio/e975afa3588bb7c1615512c3b3465983df565c7f9253da40a959d84ccf2ffa2b.wav",
+      "cachedAt": "2026-02-15T05:21:10.183Z"
+    }
+  },
+  "b9f8f7dd13efc003048303f3055184979a71d7c38e5728063675cf23ed357f42:i am going to visit my uncle who lives in a small village near the river this summer with my friends": {
+    "createdAt": "2026-02-15T05:21:56.061Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: IH, IH, L.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.\n- Weak words: in, village, near",
+      "overallScore": 98,
+      "axes": {
+        "clarity": 89.9,
+        "stress_intonation": 88.7,
+        "consonant_precision": 90,
+        "vowel_quality": 87.4,
+        "fluency": 85,
+        "completeness": 100
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: IH, IH, L.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.",
+      "weakWords": [
+        "in",
+        "village",
+        "near"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 1,
+          "word": "village",
+          "accuracy": 6,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 2,
+          "word": "near",
+          "accuracy": 47,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 0,
+          "word": "in",
+          "accuracy": 49,
+          "errorType": "Insertion"
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "in",
+          "accuracy": 49,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 1,
+          "word": "village",
+          "accuracy": 6,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 2,
+          "word": "near",
+          "accuracy": 47,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 3,
+          "word": "i",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "am",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "going",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "to",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "visit",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "my",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "uncle",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "who",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "lives",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "in",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "a",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "small",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "village",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "near",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "the",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "river",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "this",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 20,
+          "word": "summer",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 21,
+          "word": "with",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 22,
+          "word": "my",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 23,
+          "word": "friends",
+          "accuracy": 88,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "IH",
+        "IH",
+        "L",
+        "N",
+        "IY"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "In village near I am going to visit my uncle who lives in a small village near the river this summer with my friends."
+      },
+      "audioHash": "b9f8f7dd13efc003048303f3055184979a71d7c38e5728063675cf23ed357f42",
+      "audioFile": "backend\\data\\audio\\b9f8f7dd13efc003048303f3055184979a71d7c38e5728063675cf23ed357f42.wav",
+      "audioUrl": "/saved-audio/b9f8f7dd13efc003048303f3055184979a71d7c38e5728063675cf23ed357f42.wav",
+      "cachedAt": "2026-02-15T05:21:56.061Z"
+    }
+  },
+  "7e0a4e48d8190af13886e407fc115b957ba6f6c3ebe2a8f317af451aa7a845cd:i am going to visit my uncle who lives in a small village near the river this summer with my friends": {
+    "createdAt": "2026-02-15T05:23:58.013Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "overallScore": 96,
+      "axes": {
+        "clarity": 95.9,
+        "stress_intonation": 89.9,
+        "consonant_precision": 93.1,
+        "vowel_quality": 96.4,
+        "fluency": 98,
+        "completeness": 100
+      },
+      "criticalPoints": [
+        "Pronunciation is understandable, but consistency drops on harder sounds.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "weakWords": [],
+      "weakWordDetails": [],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "i",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "am",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 2,
+          "word": "going",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "to",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "visit",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "my",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "uncle",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "who",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "lives",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "in",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "a",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "small",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "village",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "near",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "river",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "this",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "summer",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "with",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "my",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 20,
+          "word": "friends",
+          "accuracy": 79,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "I am going to visit my uncle who lives in a small village near the river this summer with my friends."
+      },
+      "audioHash": "7e0a4e48d8190af13886e407fc115b957ba6f6c3ebe2a8f317af451aa7a845cd",
+      "audioFile": "backend\\data\\audio\\7e0a4e48d8190af13886e407fc115b957ba6f6c3ebe2a8f317af451aa7a845cd.wav",
+      "audioUrl": "/saved-audio/7e0a4e48d8190af13886e407fc115b957ba6f6c3ebe2a8f317af451aa7a845cd.wav",
+      "cachedAt": "2026-02-15T05:23:58.013Z"
+    }
+  },
+  "69dde7ef920a40a81371ed849caf2d77831798a07c39ca674cda00c22fcf1a2c:this sentence contains every letter of the english alphabet and is commonly used for typing practice the quick brown fox jumps over the lazy dog": {
+    "createdAt": "2026-02-15T05:32:02.789Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Stress and intonation are flat in key phrases.\n- Weakness: Vowel shape/length is inconsistent on stressed syllables.\n- Action: Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.\n- Weak words: every, letter, alphabet, for, typing, typing",
+      "overallScore": 78,
+      "axes": {
+        "clarity": 77.7,
+        "stress_intonation": 65.8,
+        "consonant_precision": 79.2,
+        "vowel_quality": 74.4,
+        "fluency": 62,
+        "completeness": 80
+      },
+      "criticalPoints": [
+        "Stress and intonation are flat in key phrases.",
+        "Vowel shape/length is inconsistent on stressed syllables."
+      ],
+      "actionDrill": "Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.",
+      "weakWords": [
+        "every",
+        "letter",
+        "alphabet",
+        "for",
+        "typing",
+        "typing"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 14,
+          "word": "typing",
+          "accuracy": 30,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 3,
+          "word": "every",
+          "accuracy": 33,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 8,
+          "word": "alphabet",
+          "accuracy": 49,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 4,
+          "word": "letter",
+          "accuracy": 53,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 13,
+          "word": "for",
+          "accuracy": 53,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 15,
+          "word": "typing",
+          "accuracy": 57,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 28,
+          "word": "dog",
+          "accuracy": 58,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 26,
+          "word": "the",
+          "accuracy": 69,
+          "errorType": null
+        },
+        {
+          "index": 2,
+          "word": "contains",
+          "accuracy": 73,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "the",
+          "accuracy": 79,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 16,
+          "word": "typing",
+          "accuracy": 85,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 20,
+          "word": "the",
+          "accuracy": 91,
+          "errorType": "Insertion"
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "this",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "sentence",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 2,
+          "word": "contains",
+          "accuracy": 73,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "every",
+          "accuracy": 33,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 4,
+          "word": "letter",
+          "accuracy": 53,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 5,
+          "word": "of",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "the",
+          "accuracy": 88,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "english",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "alphabet",
+          "accuracy": 49,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 9,
+          "word": "and",
+          "accuracy": 80,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "is",
+          "accuracy": 79,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "commonly",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "used",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "for",
+          "accuracy": 53,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 14,
+          "word": "typing",
+          "accuracy": 30,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 15,
+          "word": "typing",
+          "accuracy": 57,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 16,
+          "word": "typing",
+          "accuracy": 85,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 17,
+          "word": "practice",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "the",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "the",
+          "accuracy": 79,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 20,
+          "word": "the",
+          "accuracy": 91,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 21,
+          "word": "quick",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 22,
+          "word": "brown",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 23,
+          "word": "fox",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 24,
+          "word": "jumps",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 25,
+          "word": "over",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 26,
+          "word": "the",
+          "accuracy": 69,
+          "errorType": null
+        },
+        {
+          "index": 27,
+          "word": "lazy",
+          "accuracy": 76,
+          "errorType": null
+        },
+        {
+          "index": 28,
+          "word": "dog",
+          "accuracy": 58,
+          "errorType": "Insertion"
+        },
+        {
+          "index": 29,
+          "word": "dog",
+          "accuracy": 88,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "R",
+        "IH",
+        "NG",
+        "IH",
+        "NG"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "This sentence contains every letter of the English alphabet and is commonly used for typing, typing, typing practice. The the the quick brown fox jumps over the lazy dog dog."
+      },
+      "audioHash": "69dde7ef920a40a81371ed849caf2d77831798a07c39ca674cda00c22fcf1a2c",
+      "audioFile": "backend\\data\\audio\\69dde7ef920a40a81371ed849caf2d77831798a07c39ca674cda00c22fcf1a2c.wav",
+      "audioUrl": "/saved-audio/69dde7ef920a40a81371ed849caf2d77831798a07c39ca674cda00c22fcf1a2c.wav",
+      "cachedAt": "2026-02-15T05:32:02.789Z"
+    }
+  },
+  "f5001dc38a223eb9bdb58925f0b0f781e8dff38d4ce75c626f5f321f32318b3d:the manager carefully reviewed the financial reports for the entire month making sure the numbers added up correctly every time": {
+    "createdAt": "2026-02-15T05:46:08.408Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: N, JH, AX.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Practice TH: think, three, thank slowly; then say full sentence at natural speed.\n- Weak words: manager",
+      "overallScore": 91,
+      "axes": {
+        "clarity": 90.8,
+        "stress_intonation": 87.6,
+        "consonant_precision": 87.2,
+        "vowel_quality": 90.5,
+        "fluency": 96,
+        "completeness": 95
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: N, JH, AX.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Practice TH: think, three, thank slowly; then say full sentence at natural speed.",
+      "weakWords": [
+        "manager"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 1,
+          "word": "manager",
+          "accuracy": 49,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 10,
+          "word": "month",
+          "accuracy": 70,
+          "errorType": null
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "the",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "manager",
+          "accuracy": 49,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 2,
+          "word": "carefully",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "reviewed",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "financial",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "reports",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "for",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "entire",
+          "accuracy": 79,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "month",
+          "accuracy": 70,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "making",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "sure",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "numbers",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "added",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "up",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "correctly",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "every",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "time",
+          "accuracy": 94,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "N",
+        "JH",
+        "AX",
+        "AX",
+        "TH"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "The manager carefully reviewed the financial reports for the entire month, making sure the numbers added up correctly every time."
+      },
+      "azureDebug": {
+        "nbestCount": 1,
+        "selectedNBestIndex": 0,
+        "scoreCandidates": {
+          "accuracy": [
+            null,
+            91,
+            null,
+            null,
+            null
+          ],
+          "fluency": [
+            null,
+            96,
+            null,
+            null,
+            null
+          ],
+          "completeness": [
+            null,
+            95,
+            null,
+            null,
+            null
+          ],
+          "prosody": [
+            null,
+            87.6,
+            null,
+            null,
+            null
+          ]
+        },
+        "picked": {
+          "accuracyRaw": 91,
+          "fluencyRaw": 96,
+          "completenessRaw": 95,
+          "prosodyRaw": 87.6,
+          "wordAccuracyAvg": 90.85
+        }
+      },
+      "audioHash": "f5001dc38a223eb9bdb58925f0b0f781e8dff38d4ce75c626f5f321f32318b3d",
+      "audioFile": "backend\\data\\audio\\f5001dc38a223eb9bdb58925f0b0f781e8dff38d4ce75c626f5f321f32318b3d.wav",
+      "audioUrl": "/saved-audio/f5001dc38a223eb9bdb58925f0b0f781e8dff38d4ce75c626f5f321f32318b3d.wav",
+      "cachedAt": "2026-02-15T05:46:08.408Z"
+    }
+  },
+  "30693c27a888756326c70a439917dcb6e42140cb48d09772b7d9bb9ac752f104:this sentence contains every letter of the english alphabet and is commonly used for typing practice the quick brown fox jumps over the lazy dog": {
+    "createdAt": "2026-02-15T05:51:09.367Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: AX, R, N.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.\n- Weak words: sentence, letter, fox",
+      "overallScore": 85,
+      "axes": {
+        "clarity": 85.2,
+        "stress_intonation": 79,
+        "consonant_precision": 79.5,
+        "vowel_quality": 82.2,
+        "fluency": 87,
+        "completeness": 92
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: AX, R, N.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.",
+      "weakWords": [
+        "sentence",
+        "letter",
+        "fox"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 1,
+          "word": "sentence",
+          "accuracy": 18,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 4,
+          "word": "letter",
+          "accuracy": 58,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 19,
+          "word": "fox",
+          "accuracy": 61,
+          "errorType": null
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "this",
+          "accuracy": 79,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "sentence",
+          "accuracy": 18,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 2,
+          "word": "contains",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "every",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "letter",
+          "accuracy": 58,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 5,
+          "word": "of",
+          "accuracy": 82,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "english",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "alphabet",
+          "accuracy": 79,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "and",
+          "accuracy": 88,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "is",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "commonly",
+          "accuracy": 82,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "used",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "for",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "typing",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "practice",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "the",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "quick",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "brown",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "fox",
+          "accuracy": 61,
+          "errorType": null
+        },
+        {
+          "index": 20,
+          "word": "jumps",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 21,
+          "word": "over",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 22,
+          "word": "the",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 23,
+          "word": "lazy",
+          "accuracy": 88,
+          "errorType": null
+        },
+        {
+          "index": 24,
+          "word": "dog",
+          "accuracy": 94,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "AX",
+        "R",
+        "N",
+        "S",
+        "N"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "This sentence contains every letter of the English alphabet and is commonly used for typing practice. The quick brown fox jumps over the lazy dog."
+      },
+      "azureDebug": {
+        "nbestCount": 1,
+        "selectedNBestIndex": 0,
+        "scoreCandidates": {
+          "accuracy": [
+            null,
+            85,
+            null,
+            null,
+            null
+          ],
+          "fluency": [
+            null,
+            87,
+            null,
+            null,
+            null
+          ],
+          "completeness": [
+            null,
+            92,
+            null,
+            null,
+            null
+          ],
+          "prosody": [
+            null,
+            79,
+            null,
+            null,
+            null
+          ]
+        },
+        "picked": {
+          "accuracyRaw": 85,
+          "fluencyRaw": 87,
+          "completenessRaw": 92,
+          "prosodyRaw": 79,
+          "wordAccuracyAvg": 85.2
+        }
+      },
+      "audioHash": "30693c27a888756326c70a439917dcb6e42140cb48d09772b7d9bb9ac752f104",
+      "audioFile": "backend\\data\\audio\\30693c27a888756326c70a439917dcb6e42140cb48d09772b7d9bb9ac752f104.wav",
+      "audioUrl": "/saved-audio/30693c27a888756326c70a439917dcb6e42140cb48d09772b7d9bb9ac752f104.wav",
+      "cachedAt": "2026-02-15T05:51:09.367Z"
+    }
+  },
+  "90b9426ab39f969ba9a989d2095819e20fcc6b816b5aa654c7af70d8d3288dea:the weather forecast said there would be heavy thunderstorms in the city tonight and strong winds": {
+    "createdAt": "2026-02-15T05:54:13.975Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: AX, D, R.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Practice TH: think, three, thank slowly; then say full sentence at natural speed.\n- Weak words: thunderstorms",
+      "overallScore": 88,
+      "axes": {
+        "clarity": 87.6,
+        "stress_intonation": 82.1,
+        "consonant_precision": 84.9,
+        "vowel_quality": 88.8,
+        "fluency": 97,
+        "completeness": 94
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: AX, D, R.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Practice TH: think, three, thank slowly; then say full sentence at natural speed.",
+      "weakWords": [
+        "thunderstorms"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 8,
+          "word": "thunderstorms",
+          "accuracy": 12,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 2,
+          "word": "forecast",
+          "accuracy": 73,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "heavy",
+          "accuracy": 73,
+          "errorType": null
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "the",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "weather",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 2,
+          "word": "forecast",
+          "accuracy": 73,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "said",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "there",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "would",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "be",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "heavy",
+          "accuracy": 73,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "thunderstorms",
+          "accuracy": 12,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 9,
+          "word": "in",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "city",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "tonight",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "and",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "strong",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "winds",
+          "accuracy": 94,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "AX",
+        "D",
+        "R",
+        "TH",
+        "T"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "The weather forecast said there would be heavy thunderstorms in the city tonight and strong winds."
+      },
+      "azureDebug": {
+        "nbestCount": 1,
+        "selectedNBestIndex": 0,
+        "scoreCandidates": {
+          "accuracy": [
+            null,
+            88,
+            null,
+            null,
+            null
+          ],
+          "fluency": [
+            null,
+            97,
+            null,
+            null,
+            null
+          ],
+          "completeness": [
+            null,
+            94,
+            null,
+            null,
+            null
+          ],
+          "prosody": [
+            null,
+            82.1,
+            null,
+            null,
+            null
+          ]
+        },
+        "picked": {
+          "accuracyRaw": 88,
+          "fluencyRaw": 97,
+          "completenessRaw": 94,
+          "prosodyRaw": 82.1,
+          "wordAccuracyAvg": 87.5625
+        }
+      },
+      "audioHash": "90b9426ab39f969ba9a989d2095819e20fcc6b816b5aa654c7af70d8d3288dea",
+      "audioFile": "backend\\data\\audio\\90b9426ab39f969ba9a989d2095819e20fcc6b816b5aa654c7af70d8d3288dea.wav",
+      "audioUrl": "/saved-audio/90b9426ab39f969ba9a989d2095819e20fcc6b816b5aa654c7af70d8d3288dea.wav",
+      "cachedAt": "2026-02-15T05:54:13.975Z"
+    }
+  },
+  "322941645830d1d9215142ce7cb8ff5a0a6bb5130383fae57573a11845e0a7e3:she had been to the beautiful village in the mountains three times already last year with her friends": {
+    "createdAt": "2026-02-15T05:56:42.766Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: Y, Z, T.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "overallScore": 95,
+      "axes": {
+        "clarity": 94.7,
+        "stress_intonation": 81.4,
+        "consonant_precision": 93,
+        "vowel_quality": 96.5,
+        "fluency": 98,
+        "completeness": 100
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: Y, Z, T.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "weakWords": [],
+      "weakWordDetails": [],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "she",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "had",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 2,
+          "word": "been",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "to",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "beautiful",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "village",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "in",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "mountains",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "three",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "times",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "already",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "last",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "year",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "with",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "her",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "friends",
+          "accuracy": 79,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "Y",
+        "Z",
+        "T"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "She had been to the beautiful village in the mountains three times already last year with her friends."
+      },
+      "azureDebug": {
+        "nbestCount": 1,
+        "selectedNBestIndex": 0,
+        "scoreCandidates": {
+          "accuracy": [
+            null,
+            95,
+            null,
+            null,
+            null
+          ],
+          "fluency": [
+            null,
+            98,
+            null,
+            null,
+            null
+          ],
+          "completeness": [
+            null,
+            100,
+            null,
+            null,
+            null
+          ],
+          "prosody": [
+            null,
+            81.4,
+            null,
+            null,
+            null
+          ]
+        },
+        "picked": {
+          "accuracyRaw": 95,
+          "fluencyRaw": 98,
+          "completenessRaw": 100,
+          "prosodyRaw": 81.4,
+          "wordAccuracyAvg": 94.66666666666667
+        }
+      },
+      "audioHash": "322941645830d1d9215142ce7cb8ff5a0a6bb5130383fae57573a11845e0a7e3",
+      "audioFile": "backend\\data\\audio\\322941645830d1d9215142ce7cb8ff5a0a6bb5130383fae57573a11845e0a7e3.wav",
+      "audioUrl": "/saved-audio/322941645830d1d9215142ce7cb8ff5a0a6bb5130383fae57573a11845e0a7e3.wav",
+      "cachedAt": "2026-02-15T05:56:42.766Z"
+    }
+  },
+  "023d66d723f98c121f10296006868ba7a500aa2fa9f354f15d948a48c4941fd9:the weather forecast says it will be raining heavily tomorrow morning and i must take my umbrella with me": {
+    "createdAt": "2026-02-15T05:57:05.496Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: T, S, AO.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Repeat weak words slowly 3x each: weather, forecast.\n- Weak words: weather, forecast",
+      "overallScore": 88,
+      "axes": {
+        "clarity": 88.4,
+        "stress_intonation": 78.2,
+        "consonant_precision": 88.3,
+        "vowel_quality": 89.8,
+        "fluency": 100,
+        "completeness": 89
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: T, S, AO.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Repeat weak words slowly 3x each: weather, forecast.",
+      "weakWords": [
+        "weather",
+        "forecast"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 1,
+          "word": "weather",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 2,
+          "word": "forecast",
+          "accuracy": 59,
+          "errorType": "Mispronunciation"
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "the",
+          "accuracy": 80,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "weather",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 2,
+          "word": "forecast",
+          "accuracy": 59,
+          "errorType": "Mispronunciation"
+        },
+        {
+          "index": 3,
+          "word": "says",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "it",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "will",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "be",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "raining",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "heavily",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "tomorrow",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "morning",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "and",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "i",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "must",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "take",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "my",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "umbrella",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "with",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "me",
+          "accuracy": 97,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "T",
+        "S",
+        "AO",
+        "S",
+        "DH"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "The forecast says it will be raining heavily tomorrow morning and I must take my umbrella with me."
+      },
+      "azureDebug": {
+        "nbestCount": 1,
+        "selectedNBestIndex": 0,
+        "scoreCandidates": {
+          "accuracy": [
+            null,
+            88,
+            null,
+            null,
+            null
+          ],
+          "fluency": [
+            null,
+            100,
+            null,
+            null,
+            null
+          ],
+          "completeness": [
+            null,
+            89,
+            null,
+            null,
+            null
+          ],
+          "prosody": [
+            null,
+            78.2,
+            null,
+            null,
+            null
+          ]
+        },
+        "picked": {
+          "accuracyRaw": 88,
+          "fluencyRaw": 100,
+          "completenessRaw": 89,
+          "prosodyRaw": 78.2,
+          "wordAccuracyAvg": 88.36842105263158
+        }
+      },
+      "audioHash": "023d66d723f98c121f10296006868ba7a500aa2fa9f354f15d948a48c4941fd9",
+      "audioFile": "backend\\data\\audio\\023d66d723f98c121f10296006868ba7a500aa2fa9f354f15d948a48c4941fd9.wav",
+      "audioUrl": "/saved-audio/023d66d723f98c121f10296006868ba7a500aa2fa9f354f15d948a48c4941fd9.wav",
+      "cachedAt": "2026-02-15T05:57:05.496Z"
+    }
+  },
+  "be6dc5268b858dee7556e1eecb89a1231ea33e96d4c31f492a9daf79c16a185d:the young girl was singing a sweet and melancholic song about her favorite village surrounded by green hills and mountains": {
+    "createdAt": "2026-02-15T06:06:38.326Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: JH, L, T.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.\n- Weak words: singing, sweet, melancholic, village",
+      "overallScore": 85,
+      "axes": {
+        "clarity": 84.7,
+        "stress_intonation": 78.4,
+        "consonant_precision": 82,
+        "vowel_quality": 86.8,
+        "fluency": 93,
+        "completeness": 100
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: JH, L, T.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.",
+      "weakWords": [
+        "singing",
+        "sweet",
+        "melancholic",
+        "village"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 6,
+          "word": "sweet",
+          "accuracy": 65,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "village",
+          "accuracy": 67,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "singing",
+          "accuracy": 68,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "melancholic",
+          "accuracy": 68,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "favorite",
+          "accuracy": 73,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "hills",
+          "accuracy": 73,
+          "errorType": null
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "young",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 2,
+          "word": "girl",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "was",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "singing",
+          "accuracy": 68,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "a",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "sweet",
+          "accuracy": 65,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "and",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "melancholic",
+          "accuracy": 68,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "song",
+          "accuracy": 76,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "about",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "her",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "favorite",
+          "accuracy": 73,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "village",
+          "accuracy": 67,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "surrounded",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "by",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "green",
+          "accuracy": 88,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "hills",
+          "accuracy": 73,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "and",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "mountains",
+          "accuracy": 79,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "JH",
+        "L",
+        "T",
+        "NG",
+        "AA"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "The young girl was singing a sweet and melancholic song about her favorite village surrounded by green hills and mountains."
+      },
+      "azureDebug": {
+        "nbestCount": 1,
+        "selectedNBestIndex": 0,
+        "scoreCandidates": {
+          "accuracy": [
+            null,
+            85,
+            null,
+            null,
+            null
+          ],
+          "fluency": [
+            null,
+            93,
+            null,
+            null,
+            null
+          ],
+          "completeness": [
+            null,
+            100,
+            null,
+            null,
+            null
+          ],
+          "prosody": [
+            null,
+            78.4,
+            null,
+            null,
+            null
+          ]
+        },
+        "picked": {
+          "accuracyRaw": 85,
+          "fluencyRaw": 93,
+          "completenessRaw": 100,
+          "prosodyRaw": 78.4,
+          "wordAccuracyAvg": 84.7
+        }
+      },
+      "audioHash": "be6dc5268b858dee7556e1eecb89a1231ea33e96d4c31f492a9daf79c16a185d",
+      "audioFile": "backend\\data\\audio\\be6dc5268b858dee7556e1eecb89a1231ea33e96d4c31f492a9daf79c16a185d.wav",
+      "audioUrl": "/saved-audio/be6dc5268b858dee7556e1eecb89a1231ea33e96d4c31f492a9daf79c16a185d.wav",
+      "cachedAt": "2026-02-15T06:06:38.326Z"
+    }
+  },
+  "c5becbb2286f21c74a9d3cb38a79a37f45dfa7b809bccbe8e324cbf7150a718a:the young girl carefully walked through the village watching the old men sing loudly in front of the large green wooden bridge": {
+    "createdAt": "2026-02-15T06:16:58.956Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: N, S, T.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "overallScore": 94,
+      "axes": {
+        "clarity": 93.6,
+        "stress_intonation": 85.6,
+        "consonant_precision": 93.6,
+        "vowel_quality": 94.9,
+        "fluency": 92,
+        "completeness": 100
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: N, S, T.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Read once slowly, mark stressed words, then reread with stronger rhythm and clearer consonants.",
+      "weakWords": [],
+      "weakWordDetails": [],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "the",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 1,
+          "word": "young",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 2,
+          "word": "girl",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "carefully",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "walked",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "through",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "the",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "village",
+          "accuracy": 88,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "watching",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "old",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "men",
+          "accuracy": 91,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "sing",
+          "accuracy": 79,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "loudly",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "in",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 15,
+          "word": "front",
+          "accuracy": 79,
+          "errorType": null
+        },
+        {
+          "index": 16,
+          "word": "of",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 17,
+          "word": "the",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 18,
+          "word": "large",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 19,
+          "word": "green",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 20,
+          "word": "wooden",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 21,
+          "word": "bridge",
+          "accuracy": 82,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "N",
+        "S",
+        "T",
+        "IH",
+        "JH"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "The young girl carefully walked through the village, watching the old men sing loudly in front of the large green wooden bridge."
+      },
+      "azureDebug": {
+        "nbestCount": 1,
+        "selectedNBestIndex": 0,
+        "scoreCandidates": {
+          "accuracy": [
+            null,
+            94,
+            null,
+            null,
+            null
+          ],
+          "fluency": [
+            null,
+            92,
+            null,
+            null,
+            null
+          ],
+          "completeness": [
+            null,
+            100,
+            null,
+            null,
+            null
+          ],
+          "prosody": [
+            null,
+            85.6,
+            null,
+            null,
+            null
+          ]
+        },
+        "picked": {
+          "accuracyRaw": 94,
+          "fluencyRaw": 92,
+          "completenessRaw": 100,
+          "prosodyRaw": 85.6,
+          "wordAccuracyAvg": 93.5909090909091
+        }
+      },
+      "audioHash": "c5becbb2286f21c74a9d3cb38a79a37f45dfa7b809bccbe8e324cbf7150a718a",
+      "audioFile": "backend\\data\\audio\\c5becbb2286f21c74a9d3cb38a79a37f45dfa7b809bccbe8e324cbf7150a718a.wav",
+      "audioUrl": "/saved-audio/c5becbb2286f21c74a9d3cb38a79a37f45dfa7b809bccbe8e324cbf7150a718a.wav",
+      "cachedAt": "2026-02-15T06:16:58.956Z"
+    }
+  },
+  "38aae84e085aab96905498d7c305f8d8a9600135165887ae74db62bb89aa5f9a:she is very careful when she drives her car through slippery roads in the morning": {
+    "createdAt": "2026-02-15T06:24:24.834Z",
+    "result": {
+      "source": "azure",
+      "feedback": "- Weakness: Frequent weak phonemes: Z, N, R.\n- Weakness: Pronunciation is understandable, but consistency drops on harder sounds.\n- Action: Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.\n- Weak words: she, is",
+      "overallScore": 80,
+      "axes": {
+        "clarity": 80.1,
+        "stress_intonation": 81.1,
+        "consonant_precision": 90.4,
+        "vowel_quality": 92,
+        "fluency": 100,
+        "completeness": 87
+      },
+      "criticalPoints": [
+        "Frequent weak phonemes: Z, N, R.",
+        "Pronunciation is understandable, but consistency drops on harder sounds."
+      ],
+      "actionDrill": "Alternate right-light, road-load, really-lily for 2 minutes, then reread the sentence.",
+      "weakWords": [
+        "she",
+        "is"
+      ],
+      "weakWordDetails": [
+        {
+          "index": 0,
+          "word": "she",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 1,
+          "word": "is",
+          "accuracy": 0,
+          "errorType": "Omission"
+        }
+      ],
+      "wordScores": [
+        {
+          "index": 0,
+          "word": "she",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 1,
+          "word": "is",
+          "accuracy": 0,
+          "errorType": "Omission"
+        },
+        {
+          "index": 2,
+          "word": "very",
+          "accuracy": 85,
+          "errorType": null
+        },
+        {
+          "index": 3,
+          "word": "careful",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 4,
+          "word": "when",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 5,
+          "word": "she",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 6,
+          "word": "drives",
+          "accuracy": 79,
+          "errorType": null
+        },
+        {
+          "index": 7,
+          "word": "her",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 8,
+          "word": "car",
+          "accuracy": 88,
+          "errorType": null
+        },
+        {
+          "index": 9,
+          "word": "through",
+          "accuracy": 97,
+          "errorType": null
+        },
+        {
+          "index": 10,
+          "word": "slippery",
+          "accuracy": 88,
+          "errorType": null
+        },
+        {
+          "index": 11,
+          "word": "roads",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 12,
+          "word": "in",
+          "accuracy": 94,
+          "errorType": null
+        },
+        {
+          "index": 13,
+          "word": "the",
+          "accuracy": 100,
+          "errorType": null
+        },
+        {
+          "index": 14,
+          "word": "morning",
+          "accuracy": 88,
+          "errorType": null
+        }
+      ],
+      "weakPhonemes": [
+        "Z",
+        "N",
+        "R",
+        "IH",
+        "K"
+      ],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "Very careful when she drives her car through slippery roads in the morning."
+      },
+      "azureDebug": {
+        "nbestCount": 1,
+        "selectedNBestIndex": 0,
+        "scoreCandidates": {
+          "accuracy": [
+            null,
+            80,
+            null,
+            null,
+            null
+          ],
+          "fluency": [
+            null,
+            100,
+            null,
+            null,
+            null
+          ],
+          "completeness": [
+            null,
+            87,
+            null,
+            null,
+            null
+          ],
+          "prosody": [
+            null,
+            81.1,
+            null,
+            null,
+            null
+          ]
+        },
+        "picked": {
+          "accuracyRaw": 80,
+          "fluencyRaw": 100,
+          "completenessRaw": 87,
+          "prosodyRaw": 81.1,
+          "wordAccuracyAvg": 80.06666666666666
+        }
+      },
+      "audioHash": "38aae84e085aab96905498d7c305f8d8a9600135165887ae74db62bb89aa5f9a",
+      "audioFile": "backend\\data\\audio\\38aae84e085aab96905498d7c305f8d8a9600135165887ae74db62bb89aa5f9a.wav",
+      "audioUrl": "/saved-audio/38aae84e085aab96905498d7c305f8d8a9600135165887ae74db62bb89aa5f9a.wav",
+      "cachedAt": "2026-02-15T06:24:24.834Z"
+    }
   }
 }

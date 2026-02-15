@@ -6,6 +6,7 @@ interface TranscriptionDisplayProps {
   tokens: { word: string; status: "match" | "miss" | "extra"; confidence: number | null }[];
   isConnected: boolean;
   isRecording: boolean;
+  forceNeutral?: boolean;
 }
 
 const TranscriptionDisplay = ({
@@ -14,6 +15,7 @@ const TranscriptionDisplay = ({
   tokens,
   isConnected,
   isRecording,
+  forceNeutral = false,
 }: TranscriptionDisplayProps) => {
   const hasContent = tokens.length > 0 || partialTranscript || transcript;
 
@@ -48,14 +50,20 @@ const TranscriptionDisplay = ({
                   <span
                     key={idx}
                     className={
-                      t.status === "match"
-                        ? "font-medium"
-                        : "text-destructive font-semibold"
+                      forceNeutral
+                        ? "text-muted-foreground font-medium"
+                        : t.status === "match"
+                          ? "font-medium"
+                          : "text-destructive font-semibold"
                     }
-                    style={t.status === "match" ? { color: colorFromConfidence(t.confidence) } : undefined}
+                    style={
+                      !forceNeutral && t.status === "match" && t.confidence !== null
+                        ? { color: colorFromConfidence(t.confidence) }
+                        : undefined
+                    }
                   >
                     {t.word}
-                    {t.status === "match" && t.confidence !== null && (
+                    {!forceNeutral && t.status === "match" && t.confidence !== null && (
                       <span className="ml-1 text-[10px] align-super text-muted-foreground opacity-70">
                         {formatConfidence(t.confidence)}
                       </span>
@@ -64,7 +72,7 @@ const TranscriptionDisplay = ({
                   </span>
                 ))}
                 {partialTranscript && (
-                  <span className="text-muted-foreground italic">
+                  <span className="text-muted-foreground italic opacity-80">
                     {" "}
                     {partialTranscript}
                   </span>

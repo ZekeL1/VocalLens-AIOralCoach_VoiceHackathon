@@ -5,7 +5,7 @@ import Waveform from "@/components/Waveform";
 import RecordButton from "@/components/RecordButton";
 import TranscriptionDisplay from "@/components/TranscriptionDisplay";
 import { useASR } from "@/hooks/useASR";
-import AnalysisDashboard from "@/components/AnalysisDashboard";
+import PronunciationSignature from "@/components/PronunciationSignature";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { diffWords, pickPhonemeHint } from "@/lib/scoring";
+import { diffWords } from "@/lib/scoring";
 import { sampleText } from "@/components/ReferenceText";
 import { useToast } from "@/hooks/use-toast";
 import type { PronunciationSignature } from "@/lib/scoring";
@@ -36,6 +36,8 @@ const Index = () => {
   const [wordDiagnostics, setWordDiagnostics] = useState<
     Array<{ word: string; accuracy: number; errorType: string | null }>
   >([]);
+  const [azureWordConfidences, setAzureWordConfidences] = useState<Array<number | null> | null>(null);
+  const [azureDisplayTranscript, setAzureDisplayTranscript] = useState<string | null>(null);
   const [modelSignature, setModelSignature] = useState<PronunciationSignature | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [referenceText, setReferenceText] = useState(sampleText.trim());
@@ -64,18 +66,24 @@ const Index = () => {
     getRecordedWavBase64,
   } = useASR();
 
-  const hasFinalSpeech = transcript.trim().length > 0;
+  const transcriptForDisplay = azureDisplayTranscript ?? transcript;
+  const partialForDisplay = azureDisplayTranscript ? "" : partialTranscript;
+  const hasFinalSpeech = transcriptForDisplay.trim().length > 0;
+  const hasAzureWordScores = Array.isArray(azureWordConfidences) && azureWordConfidences.length > 0;
+  const displayWordConfidences = useMemo(() => {
+    if (hasAzureWordScores) return azureWordConfidences as Array<number | null>;
+    return tokenizeSimple(transcriptForDisplay).map(() => null as number | null);
+  }, [azureWordConfidences, hasAzureWordScores, transcriptForDisplay]);
   const analysis = hasFinalSpeech
-    ? diffWords(referenceText, transcript, wordConfidences)
+    ? diffWords(referenceText, transcriptForDisplay, displayWordConfidences)
     : { tokens: [], accuracy: 0, mismatches: [] };
-  const hint = hasFinalSpeech ? pickPhonemeHint(analysis.mismatches) : null;
   const displayedAdvice = isEvaluatingPronunciation
-    ? "Analyzing pronunciation with Groq..."
+    ? "Analyzing pronunciation..."
     : finishSummary.hint || "No advice available yet. Try another recording.";
   const adviceSections = useMemo(() => {
     const raw = displayedAdvice.replace(/\r/g, "").trim();
     if (!raw) return [];
-    if (raw === "Analyzing pronunciation with Groq...") return [raw];
+    if (raw === "Analyzing pronunciation...") return [raw];
 
     const normalized = raw
       .replace(/\n{3,}/g, "\n\n")
@@ -106,22 +114,45 @@ const Index = () => {
     setIsPaused(false);
     setIsFinishDialogOpen(false);
     setWordDiagnostics([]);
+    setAzureWordConfidences(null);
+    setAzureDisplayTranscript(null);
     setModelSignature(null);
     resetTranscript();
   }, [mediaStream, stopASR, resetTranscript]);
 
 
   const finishSession = useCallback(() => {
-    const score = hasFinalSpeech ? analysis.accuracy : null;
-    const fallbackHint = hint || "No advice available yet. Try another recording.";
+    const normalizeForSnapshot = (text: string) =>
+      text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const finalPart = transcript.trim();
+    const partialPart = partialTranscript.trim();
+    const finalNorm = normalizeForSnapshot(finalPart);
+    const partialNorm = normalizeForSnapshot(partialPart);
+
+    let transcriptSnapshot = finalPart;
+    if (partialPart) {
+      const partialAlreadyIncluded = !!finalNorm && !!partialNorm && finalNorm.includes(partialNorm);
+      if (!partialAlreadyIncluded) {
+        transcriptSnapshot = [finalPart, partialPart].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+      }
+    }
+
+    const hasSpeechForFinish = transcriptSnapshot.length > 0;
+    const fallbackHint = "No advice available yet. Try another recording.";
     setFinishSummary({
-      score,
-      hint: hasFinalSpeech ? "Analyzing pronunciation with Groq..." : fallbackHint,
+      score: null,
+      hint: hasSpeechForFinish ? "Analyzing pronunciation..." : fallbackHint,
     });
 
-    const transcriptSnapshot = transcript.trim();
     const referenceSnapshot = referenceText.trim();
     const confidenceSnapshot = [...wordConfidences];
+    setAzureWordConfidences(null);
+    setAzureDisplayTranscript(null);
 
     stopASR();
     const wavBase64 = getRecordedWavBase64(20);
@@ -138,7 +169,6 @@ const Index = () => {
     setIsEvaluatingPronunciation(true);
     void (async () => {
       try {
-        let usedAzureScore = false;
         const parseErrorDetail = async (response: Response) => {
           try {
             const data = await response.json();
@@ -154,64 +184,44 @@ const Index = () => {
           referenceText: referenceSnapshot,
           asrText: transcriptSnapshot,
           confidenceScores: confidenceSnapshot,
-          accuracy: score,
+          accuracy: null,
           ...(wavBase64 ? { wavBase64 } : {}),
         };
-        let response: Response;
-        if (wavBase64) {
-          response = await fetch(`${BACKEND_URL}/api/evaluate-pronunciation-azure`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          usedAzureScore = response.ok;
-          if (!response.ok) {
-            // Fallback: keep user flow working even if Azure metrics are incomplete.
-            const azureDetail = await parseErrorDetail(response);
-            response = await fetch(`${BACKEND_URL}/api/evaluate-pronunciation`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                referenceText: referenceSnapshot,
-                asrText: transcriptSnapshot,
-                confidenceScores: confidenceSnapshot,
-                accuracy: score,
-              }),
-            });
-            if (!response.ok) {
-              const groqDetail = await parseErrorDetail(response);
-              throw new Error(
-                `Azure failed (${azureDetail || "no detail"}) and Groq fallback failed (${groqDetail || `HTTP ${response.status}`})`
-              );
-            }
-            usedAzureScore = false;
-          }
-        } else {
-          response = await fetch(`${BACKEND_URL}/api/evaluate-pronunciation`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          if (!response.ok) {
-            const detail = await parseErrorDetail(response);
-            throw new Error(detail || `HTTP ${response.status}`);
-          }
-          usedAzureScore = false;
+        if (!wavBase64) {
+          throw new Error("No recorded audio available for Azure evaluation.");
+        }
+
+        const response = await fetch(`${BACKEND_URL}/api/evaluate-pronunciation-azure`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) {
+          const detail = await parseErrorDetail(response);
+          throw new Error(detail || `HTTP ${response.status}`);
         }
 
         const data = await response.json();
+        console.groupCollapsed("[Pronunciation][Azure] response");
+        console.log("cacheHit:", data?.cacheHit ?? false);
+        console.log("source:", data?.source ?? null);
+        console.log("overallScore:", data?.overallScore ?? null);
+        console.log("payload:", data);
+        if (data?.azureDebug) {
+          console.log("azureDebug:", data.azureDebug);
+        }
+        if (data?.rawAzureApi) {
+          console.log("rawAzureApi:", data.rawAzureApi);
+        }
+        console.groupEnd();
         const scoreSource = typeof data?.source === "string" ? data.source : "";
         const isStrictAzureScore = scoreSource === "azure" || scoreSource === "azure_partial";
-        usedAzureScore = usedAzureScore && isStrictAzureScore;
-        const feedback = typeof data?.feedback === "string" ? data.feedback.trim() : "";
+        const usedAzureScore = isStrictAzureScore;
         const overallScore = Number.isFinite(Number(data?.overallScore)) ? Number(data.overallScore) : null;
-        const criticalPoints = Array.isArray(data?.criticalPoints)
-          ? data.criticalPoints.map((x: unknown) => String(x).trim()).filter(Boolean)
-          : [];
-        const actionDrill = typeof data?.actionDrill === "string" ? data.actionDrill.trim() : "";
-        const weakWords = Array.isArray(data?.weakWords)
-          ? data.weakWords.map((x: unknown) => String(x).trim()).filter(Boolean)
-          : [];
+        const backendFeedback =
+          typeof data?.feedback === "string" && data.feedback.trim()
+            ? data.feedback.trim()
+            : "";
         const weakWordDetails = Array.isArray(data?.weakWordDetails)
           ? data.weakWordDetails
               .map((x: unknown) => {
@@ -242,11 +252,17 @@ const Index = () => {
               })
               .filter((x) => x.word && Number.isFinite(x.accuracy))
           : [];
+        const azureTranscriptFromScores = wordScores.map((x) => x.word).filter(Boolean).join(" ").trim();
+        const azureDisplayText = String((data as Record<string, unknown>)?.rawAzure?.displayText || "").trim();
+        const finalDisplayTranscript = azureTranscriptFromScores || azureDisplayText || transcriptSnapshot;
+        const finalWordConfidences = buildAzureWordConfidences(finalDisplayTranscript, wordScores);
+        setAzureDisplayTranscript(finalDisplayTranscript);
+        setAzureWordConfidences(finalWordConfidences);
         const axes = data?.axes || null;
 
         if (axes && typeof axes === "object" && usedAzureScore) {
           const mapped: PronunciationSignature = {
-            overall: Math.max(0, Math.min(1, (overallScore ?? score ?? 70) / 100)),
+            overall: Math.max(0, Math.min(1, (overallScore ?? 70) / 100)),
             axes: [
               { label: "Clarity", value: normalize01((axes as Record<string, unknown>).clarity) },
               { label: "Stress/Intonation", value: normalize01((axes as Record<string, unknown>).stress_intonation) },
@@ -267,20 +283,14 @@ const Index = () => {
                 .slice(0, 12);
         setWordDiagnostics(mergedWordDiagnostics);
 
-        const conciseHint = [
-          ...criticalPoints.slice(0, 2).map((p) => `- ${p}`),
-          actionDrill ? `- Action: ${actionDrill}` : "",
-          weakWords.length ? `- Weak words: ${weakWords.join(", ")}` : "",
-        ]
-          .filter(Boolean)
-          .join("\n");
-
         setFinishSummary((prev) => ({
           score: usedAzureScore ? (overallScore ?? prev.score) : prev.score,
-          hint: conciseHint || feedback || fallbackHint,
+          hint: backendFeedback || fallbackHint,
         }));
       } catch (err) {
         console.error("[Pronunciation] evaluation failed", err);
+        setAzureDisplayTranscript(null);
+        setAzureWordConfidences(null);
         setWordDiagnostics([]);
         setModelSignature(null);
         setFinishSummary((prev) => ({
@@ -297,16 +307,14 @@ const Index = () => {
       }
     })();
   }, [
-    analysis.accuracy,
     getRecordedWavBase64,
-    hasFinalSpeech,
-    hint,
     mediaStream,
+    partialTranscript,
     referenceText,
-    stopASR,
-    toast,
     transcript,
     wordConfidences,
+    stopASR,
+    toast,
   ]);
 
   const handleGenerateReferenceText = useCallback(async () => {
@@ -376,6 +384,8 @@ const Index = () => {
         const recorder = new MediaRecorder(stream);
         mediaRecorderRef.current = recorder;
         recorder.start();
+        setAzureWordConfidences(null);
+        setAzureDisplayTranscript(null);
         setMediaStream(stream);
         setIsRecording(true);
         setIsPaused(false);
@@ -620,16 +630,12 @@ const Index = () => {
           isGenerating={isGeneratingReference}
         />
         <TranscriptionDisplay
-          transcript={transcript}
-          partialTranscript={partialTranscript}
+          transcript={transcriptForDisplay}
+          partialTranscript={partialForDisplay}
           tokens={analysis.tokens}
           isConnected={isConnected}
           isRecording={isRecording}
-        />
-        <AnalysisDashboard
-          accuracy={hasFinalSpeech ? analysis.accuracy : null}
-          hint={hint}
-          signature={modelSignature}
+          forceNeutral={!hasAzureWordScores}
         />
         <Waveform
           theme={theme}
@@ -670,7 +676,7 @@ const Index = () => {
         }}
       >
         <DialogContent
-          className={`max-w-md themed-textbox themed-result-dialog border-border bg-card/95 theme-${theme}`}
+          className={`max-w-3xl themed-textbox themed-result-dialog border-border bg-card/95 theme-${theme}`}
         >
           <DialogHeader>
             <DialogTitle className="themed-kicker text-base tracking-[0.12em] uppercase">
@@ -688,6 +694,12 @@ const Index = () => {
               <p className="mt-1 text-3xl font-semibold text-primary">
                 {finishSummary.score === null ? "--" : `${finishSummary.score.toFixed(1)}%`}
               </p>
+            </div>
+            <div className="themed-result-card rounded-md border border-border/60 bg-background/60 p-3">
+              <p className="themed-kicker text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">
+                Pronunciation Signature
+              </p>
+              <PronunciationSignature signature={modelSignature} />
             </div>
             <div
               className="themed-result-card rounded-md border border-border/60 bg-background/60 p-3 cursor-pointer"
@@ -752,4 +764,70 @@ function normalize01(value: unknown) {
   if (!Number.isFinite(n)) return 0;
   if (n > 1) return Math.max(0, Math.min(1, n / 100));
   return Math.max(0, Math.min(1, n));
+}
+
+function tokenizeSimple(text: string) {
+  const normalized = normalizeToken(text);
+  return normalized ? normalized.split(" ") : [];
+}
+
+function normalizeToken(text: string) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildAzureWordConfidences(
+  transcriptText: string,
+  wordScores: Array<{ word: string; accuracy: number; errorType: string | null }>
+) {
+  const transcriptTokens = tokenizeSimple(transcriptText);
+  if (!transcriptTokens.length) return [];
+  if (!Array.isArray(wordScores) || wordScores.length === 0) {
+    return transcriptTokens.map(() => null as number | null);
+  }
+
+  const normalizedScores = wordScores
+    .map((item) => ({
+      word: normalizeToken(item.word),
+      accuracy: Number(item.accuracy),
+    }))
+    .filter((item) => item.word && Number.isFinite(item.accuracy))
+    .map((item) => ({
+      word: item.word,
+      accuracy: Math.max(0, Math.min(100, item.accuracy)),
+    }));
+
+  if (!normalizedScores.length) return transcriptTokens.map(() => null as number | null);
+
+  const result: Array<number | null> = [];
+  let cursor = 0;
+  for (const token of transcriptTokens) {
+    const windowEnd = Math.min(cursor + 4, normalizedScores.length);
+    let matchedIndex = -1;
+    for (let i = cursor; i < windowEnd; i += 1) {
+      if (normalizedScores[i].word === token) {
+        matchedIndex = i;
+        break;
+      }
+    }
+
+    if (matchedIndex >= 0) {
+      result.push(normalizedScores[matchedIndex].accuracy);
+      cursor = matchedIndex + 1;
+      continue;
+    }
+
+    if (cursor < normalizedScores.length) {
+      result.push(normalizedScores[cursor].accuracy);
+      cursor += 1;
+      continue;
+    }
+
+    result.push(null);
+  }
+
+  return result;
 }
