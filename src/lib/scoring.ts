@@ -135,6 +135,6 @@ export function pickPhonemeHint(mismatches: Mismatch[]) {
       }
     }
   }
-  return null;
+  return "Overall, your pronunciation is quite good. Keep up the great work and stay consistent.";
 }
 

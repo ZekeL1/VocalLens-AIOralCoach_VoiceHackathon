@@ -22,7 +22,7 @@ const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3001"
 const Index = () => {
   const [theme, setTheme] = useState<
     "neon" | "minimal" | "trendy" | "accessible"
-  >("minimal");
+  >("neon");
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
@@ -562,7 +562,7 @@ const Index = () => {
               <p className="themed-kicker text-xs uppercase tracking-[0.16em] text-muted-foreground">
                 Advice
               </p>
-              <div className="mt-1 space-y-2 text-sm text-card-foreground">
+              <div className="mt-1 max-h-56 overflow-y-auto pr-1 space-y-2 text-sm text-card-foreground">
                 {adviceSections.map((section, index) => (
                   <p key={`${section.slice(0, 24)}-${index}`} className="leading-relaxed">
                     {section}
