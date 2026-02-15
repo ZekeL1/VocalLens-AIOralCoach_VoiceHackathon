@@ -1,0 +1,35 @@
+{
+  "c90003216526a045418a73f7c58648388c05c24cc51655f4d11cb86ca1287079:the weather forecast shows a possibility of heavy rain and strong winds throughout the entire eastern part of the city tonight": {
+    "createdAt": "2026-02-15T04:33:04.854Z",
+    "result": {
+      "source": "azure_partial",
+      "feedback": "- Focus on precise articulation of /i/ and /wɪndz/.\n- Pay attention to the correct vowel sound in 'possibility'.\n- Repeat the phrase with a native speaker to improve pronunciation.",
+      "overallScore": 0,
+      "axes": {
+        "clarity": 0,
+        "stress_intonation": 0,
+        "consonant_precision": 0,
+        "vowel_quality": 0,
+        "fluency": 0,
+        "completeness": 0
+      },
+      "criticalPoints": [
+        "/i/ in 'possibility' is pronounced as /ɪ/",
+        "/wɪndz/ in 'winds' is pronounced as /wɪnz/"
+      ],
+      "actionDrill": "Practice /i/ in 'possibility' as /ɪ/ and /wɪndz/ in 'winds' as /wɪnz/ with a native speaker",
+      "weakWords": [],
+      "weakWordDetails": [],
+      "wordScores": [],
+      "weakPhonemes": [],
+      "rawAzure": {
+        "recognitionStatus": "Success",
+        "displayText": "Weather forecast shows a possibility of heavy rain and strong winds throughout the entire eastern part of the city tonight."
+      },
+      "audioHash": "c90003216526a045418a73f7c58648388c05c24cc51655f4d11cb86ca1287079",
+      "audioFile": "backend\\data\\audio\\c90003216526a045418a73f7c58648388c05c24cc51655f4d11cb86ca1287079.wav",
+      "audioUrl": "/saved-audio/c90003216526a045418a73f7c58648388c05c24cc51655f4d11cb86ca1287079.wav",
+      "cachedAt": "2026-02-15T04:33:04.854Z"
+    }
+  }
+}

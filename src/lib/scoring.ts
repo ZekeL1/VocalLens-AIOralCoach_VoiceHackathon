@@ -4,6 +4,11 @@ export type TokenDiff = {
   confidence: number | null;
 };
 
+export type PronunciationSignature = {
+  overall: number;
+  axes: Array<{ label: string; value: number }>;
+};
+
 type Mismatch = { ref?: string; hyp?: string };
 type Op = "match" | "sub" | "ins" | "del";
 
@@ -25,7 +30,8 @@ export function diffWords(
   const tokens: TokenDiff[] = [];
   const mismatches: Mismatch[] = [];
   let matches = 0;
-  let misses = 0;
+  let substitutions = 0;
+  let deletions = 0;
   let extras = 0;
 
   const n = ref.length;
@@ -90,7 +96,7 @@ export function diffWords(
       hi++;
       tokens.push({ word: h, status: "miss", confidence: null });
       mismatches.push({ ref: r, hyp: h });
-      misses++;
+      substitutions++;
       continue;
     }
     if (op === "ins") {
@@ -102,11 +108,54 @@ export function diffWords(
     }
     const r = ref[ri++];
     mismatches.push({ ref: r });
+    deletions++;
   }
 
-  const spokenTotal = matches + misses + extras;
-  const accuracy = spokenTotal > 0 ? (matches / spokenTotal) * 100 : 0;
-  return { tokens, accuracy, mismatches };
+  const referenceTotal = ref.length || 1;
+  const spokenTotal = hyp.length || 1;
+  const matchRate = matches / referenceTotal;
+  const precision = matches / spokenTotal;
+
+  const matchedConfidences = tokens
+    .filter((t) => t.status === "match")
+    .map((t) => normalizeConfidence(t.confidence))
+    .filter((c): c is number => c !== null);
+  const confidenceScore = matchedConfidences.length
+    ? matchedConfidences.reduce((sum, c) => sum + c, 0) / matchedConfidences.length
+    : 0.4;
+  const highConfidenceMatches = matchedConfidences.filter((c) => c >= 0.88).length;
+  const highConfidenceRate = matches > 0 ? highConfidenceMatches / matches : 0;
+  const wer = (substitutions + deletions + extras) / referenceTotal;
+
+  // Strict score: weighted correctness + confidence with strong WER/low-confidence penalties.
+  const baseScore =
+    (Math.pow(matchRate, 1.35) * 0.45 +
+      Math.pow(precision, 1.2) * 0.25 +
+      Math.pow(confidenceScore, 1.7) * 0.2 +
+      highConfidenceRate * 0.1) *
+    100;
+  const errorPenalty = wer * 55 + Math.max(0, 0.9 - confidenceScore) * 25 + (1 - highConfidenceRate) * 20;
+  let accuracy = Math.max(0, Math.min(100, baseScore - errorPenalty));
+
+  // Keep top scores rare: only near-perfect reads should exceed 95.
+  if (wer > 0.02 || confidenceScore < 0.94) accuracy = Math.min(accuracy, 96);
+  if (wer > 0.08 || confidenceScore < 0.9) accuracy = Math.min(accuracy, 90);
+  if (wer > 0.18) accuracy = Math.min(accuracy, 80);
+
+  const signature = buildPronunciationSignature({
+    accuracy,
+    matchRate,
+    confidenceScore,
+    highConfidenceRate,
+    wer,
+    deletions,
+    substitutions,
+    extras,
+    referenceTotal,
+    spokenTotal,
+  });
+
+  return { tokens, accuracy, mismatches, signature };
 }
 
 function normalizeConfidence(value: number | null | undefined) {
@@ -135,6 +184,40 @@ export function pickPhonemeHint(mismatches: Mismatch[]) {
       }
     }
   }
-  return "Overall, your pronunciation is quite good. Keep up the great work and stay consistent.";
+  return null;
+}
+
+function buildPronunciationSignature(input: {
+  accuracy: number;
+  matchRate: number;
+  confidenceScore: number;
+  highConfidenceRate: number;
+  wer: number;
+  deletions: number;
+  substitutions: number;
+  extras: number;
+  referenceTotal: number;
+  spokenTotal: number;
+}): PronunciationSignature {
+  const completeness = 1 - input.deletions / input.referenceTotal;
+  const correctness = 1 - input.substitutions / input.referenceTotal;
+  const fluency = 1 - input.extras / input.spokenTotal;
+  const strictness = Math.max(0, Math.min(1, input.accuracy / 100));
+  const clarity = input.confidenceScore * 0.7 + input.highConfidenceRate * 0.3;
+  const accuracyAxis = Math.max(0, strictness - input.wer * 0.3);
+
+  const axes = [
+    { label: "Accuracy", value: accuracyAxis },
+    { label: "Clarity", value: clarity },
+    { label: "Completeness", value: completeness },
+    { label: "Correctness", value: correctness },
+    { label: "Fluency", value: fluency },
+  ].map((axis) => ({
+    ...axis,
+    value: Math.max(0, Math.min(1, axis.value)),
+  }));
+
+  const overall = axes.reduce((sum, axis) => sum + axis.value, 0) / axes.length;
+  return { overall, axes };
 }
 

@@ -29,6 +29,7 @@ export interface UseASRReturn {
   resumeASR: () => void;
   stopASR: () => void;
   resetTranscript: () => void;
+  getRecordedWavBase64: (maxSeconds?: number) => string | null;
 }
 
 const SAMPLE_RATE = 16000;
@@ -443,6 +444,12 @@ export function useASR(): UseASRReturn {
     lastPartialNormalizedRef.current = "";
   }, []);
 
+  const getRecordedWavBase64 = useCallback((maxSeconds?: number) => {
+    const chunks = sliceRecentAudio(audioBuffersRef.current, SAMPLE_RATE, maxSeconds ?? null);
+    if (!chunks.length) return null;
+    return encodeWavBase64(chunks, SAMPLE_RATE);
+  }, []);
+
   useEffect(() => {
     return () => {
       if (partialCommitTimerRef.current !== null) {
@@ -466,6 +473,7 @@ export function useASR(): UseASRReturn {
     resumeASR,
     stopASR,
     resetTranscript,
+    getRecordedWavBase64,
   };
 }
 
@@ -630,5 +638,72 @@ function logWordConfidences(result: ASRResult) {
   console.groupCollapsed(`[ASR word confidence] ${result.is_final ? "final" : "partial"} (${rows.length})`);
   console.table(rows);
   console.groupEnd();
+}
+
+function encodeWavBase64(chunks: Float32Array[], sampleRate: number) {
+  const totalSamples = chunks.reduce((sum, c) => sum + c.length, 0);
+  const wavBuffer = new ArrayBuffer(44 + totalSamples * 2);
+  const view = new DataView(wavBuffer);
+
+  writeAscii(view, 0, "RIFF");
+  view.setUint32(4, 36 + totalSamples * 2, true);
+  writeAscii(view, 8, "WAVE");
+  writeAscii(view, 12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeAscii(view, 36, "data");
+  view.setUint32(40, totalSamples * 2, true);
+
+  let offset = 44;
+  for (const chunk of chunks) {
+    for (let i = 0; i < chunk.length; i++) {
+      const s = Math.max(-1, Math.min(1, chunk[i]));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+      offset += 2;
+    }
+  }
+
+  const bytes = new Uint8Array(wavBuffer);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function writeAscii(view: DataView, offset: number, text: string) {
+  for (let i = 0; i < text.length; i++) {
+    view.setUint8(offset + i, text.charCodeAt(i));
+  }
+}
+
+function sliceRecentAudio(chunks: Float32Array[], sampleRate: number, maxSeconds: number | null) {
+  if (!chunks.length || !maxSeconds || maxSeconds <= 0) return chunks;
+  const maxSamples = Math.floor(maxSeconds * sampleRate);
+  if (maxSamples <= 0) return chunks;
+
+  const totalSamples = chunks.reduce((sum, c) => sum + c.length, 0);
+  if (totalSamples <= maxSamples) return chunks;
+
+  let remainingToSkip = totalSamples - maxSamples;
+  const output: Float32Array[] = [];
+  for (const chunk of chunks) {
+    if (remainingToSkip >= chunk.length) {
+      remainingToSkip -= chunk.length;
+      continue;
+    }
+    if (remainingToSkip > 0) {
+      output.push(chunk.slice(remainingToSkip));
+      remainingToSkip = 0;
+      continue;
+    }
+    output.push(chunk);
+  }
+  return output;
 }
 
