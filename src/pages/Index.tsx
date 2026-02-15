@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import ReferenceText from "@/components/ReferenceText";
 import Waveform from "@/components/Waveform";
@@ -26,6 +26,8 @@ const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
+  const [isEvaluatingPronunciation, setIsEvaluatingPronunciation] = useState(false);
+  const [isReadingEvaluation, setIsReadingEvaluation] = useState(false);
   const [finishSummary, setFinishSummary] = useState<{
     score: number | null;
     hint: string | null;
@@ -35,6 +37,11 @@ const Index = () => {
   const [isGeneratingReference, setIsGeneratingReference] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const hasSpokenPromptRef = useRef(false);
+  const evaluationAudioRef = useRef<HTMLAudioElement | null>(null);
+  const evaluationAudioPrimaryUrlRef = useRef<string | null>(null);
+  const evaluationAudioSecondaryUrlRef = useRef<string | null>(null);
+  const playbackSessionRef = useRef(0);
+  const ttsAbortControllersRef = useRef<AbortController[]>([]);
   const { toast } = useToast();
 
   const {
@@ -56,6 +63,33 @@ const Index = () => {
     ? diffWords(referenceText, transcript, wordConfidences)
     : { tokens: [], accuracy: 0, mismatches: [] };
   const hint = hasFinalSpeech ? pickPhonemeHint(analysis.mismatches) : null;
+  const displayedAdvice = isEvaluatingPronunciation
+    ? "Analyzing pronunciation with Groq..."
+    : finishSummary.hint || "No advice available yet. Try another recording.";
+  const adviceSections = useMemo(() => {
+    const raw = displayedAdvice.replace(/\r/g, "").trim();
+    if (!raw) return [];
+    if (raw === "Analyzing pronunciation with Groq...") return [raw];
+
+    const normalized = raw
+      .replace(/\n{3,}/g, "\n\n")
+      .replace(/\s*\n\s*/g, "\n")
+      .trim();
+
+    const withSectionBreaks = normalized.replace(
+      /(\b(?:overall assessment|strengths?|issues? to fix|actionable drills?)\b\s*[:：-]?)/gi,
+      "\n$1"
+    );
+    const bySectionLabel = withSectionBreaks
+      .split(/\n+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const sections = (bySectionLabel.length > 1 ? bySectionLabel : normalized.split(/\n\n+/))
+      .map((s) => s.replace(/^\d+[\)\.\-:]\s*/, "").trim())
+      .filter(Boolean);
+    return sections.length ? sections : [raw];
+  }, [displayedAdvice]);
 
   const resetSession = useCallback(() => {
     stopASR();
@@ -70,10 +104,17 @@ const Index = () => {
 
 
   const finishSession = useCallback(() => {
+    const score = hasFinalSpeech ? analysis.accuracy : null;
+    const fallbackHint = hint || "No advice available yet. Try another recording.";
     setFinishSummary({
-      score: hasFinalSpeech ? analysis.accuracy : null,
-      hint,
+      score,
+      hint: hasFinalSpeech ? "Analyzing pronunciation with Groq..." : fallbackHint,
     });
+
+    const transcriptSnapshot = transcript.trim();
+    const referenceSnapshot = referenceText.trim();
+    const confidenceSnapshot = [...wordConfidences];
+
     stopASR();
     mediaRecorderRef.current?.stop();
     mediaStream?.getTracks().forEach((t) => t.stop());
@@ -81,7 +122,58 @@ const Index = () => {
     setIsRecording(false);
     setIsPaused(false);
     setIsFinishDialogOpen(true);
-  }, [analysis.accuracy, hasFinalSpeech, hint, mediaStream, stopASR]);
+    if (!transcriptSnapshot) return;
+
+    setIsEvaluatingPronunciation(true);
+    void (async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/evaluate-pronunciation`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            referenceText: referenceSnapshot,
+            asrText: transcriptSnapshot,
+            confidenceScores: confidenceSnapshot,
+            accuracy: score,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const feedback = typeof data?.feedback === "string" ? data.feedback.trim() : "";
+        setFinishSummary((prev) => ({
+          ...prev,
+          hint: feedback || fallbackHint,
+        }));
+      } catch (err) {
+        console.error("[Pronunciation] evaluation failed", err);
+        setFinishSummary((prev) => ({
+          ...prev,
+          hint: fallbackHint,
+        }));
+        toast({
+          title: "Evaluation failed",
+          description: "Could not fetch Groq feedback. Showing fallback advice.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsEvaluatingPronunciation(false);
+      }
+    })();
+  }, [
+    analysis.accuracy,
+    hasFinalSpeech,
+    hint,
+    mediaStream,
+    referenceText,
+    stopASR,
+    toast,
+    transcript,
+    wordConfidences,
+  ]);
 
   const handleGenerateReferenceText = useCallback(async () => {
     if (isGeneratingReference) return;
@@ -157,6 +249,143 @@ const Index = () => {
     setIsPaused(!isPaused);
   }, [isRecording, isPaused, mediaStream, startASR, pauseASR, resumeASR]);
 
+  const stopEvaluationAudio = useCallback(() => {
+    playbackSessionRef.current += 1;
+    for (const controller of ttsAbortControllersRef.current) {
+      controller.abort();
+    }
+    ttsAbortControllersRef.current = [];
+
+    if (evaluationAudioRef.current) {
+      evaluationAudioRef.current.pause();
+      evaluationAudioRef.current.currentTime = 0;
+      evaluationAudioRef.current = null;
+    }
+    if (evaluationAudioPrimaryUrlRef.current) {
+      URL.revokeObjectURL(evaluationAudioPrimaryUrlRef.current);
+      evaluationAudioPrimaryUrlRef.current = null;
+    }
+    if (evaluationAudioSecondaryUrlRef.current) {
+      URL.revokeObjectURL(evaluationAudioSecondaryUrlRef.current);
+      evaluationAudioSecondaryUrlRef.current = null;
+    }
+    setIsReadingEvaluation(false);
+  }, []);
+
+  const speakEvaluation = useCallback(() => {
+    if (isReadingEvaluation) {
+      stopEvaluationAudio();
+      return;
+    }
+
+    const feedbackText = isEvaluatingPronunciation
+      ? "Overall assessment: Evaluation is still in progress. Please wait a moment."
+      : finishSummary.hint || "Overall assessment: No advice available yet.";
+
+    const splitFeedback = (raw: string) => {
+      const text = raw.replace(/\r/g, "").trim();
+      if (!text) return { overall: "", rest: "" };
+
+      const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
+      const overallLineIndex = lines.findIndex((line) =>
+        /^(\d+[\)\.\-:]?\s*)?overall assessment\b/i.test(line)
+      );
+
+      if (overallLineIndex >= 0) {
+        const overallLine = lines[overallLineIndex].replace(
+          /^(\d+[\)\.\-:]?\s*)?overall assessment[:\s-]*/i,
+          ""
+        ).trim();
+        const overall = overallLine || lines[overallLineIndex];
+        const rest = lines
+          .filter((_, idx) => idx !== overallLineIndex)
+          .join("\n")
+          .trim();
+        return { overall, rest };
+      }
+
+      const [first, ...others] = lines;
+      return { overall: first || text, rest: others.join("\n").trim() };
+    };
+
+    const requestSpeechUrl = async (text: string) => {
+      const controller = new AbortController();
+      ttsAbortControllersRef.current.push(controller);
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/speak-feedback`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
+      } finally {
+        ttsAbortControllersRef.current = ttsAbortControllersRef.current.filter((c) => c !== controller);
+      }
+    };
+
+    void (async () => {
+      try {
+        stopEvaluationAudio();
+        const sessionId = ++playbackSessionRef.current;
+        const { overall, rest } = splitFeedback(feedbackText);
+        const firstChunk = overall || feedbackText;
+
+        const firstUrl = await requestSpeechUrl(firstChunk);
+        if (sessionId !== playbackSessionRef.current) {
+          URL.revokeObjectURL(firstUrl);
+          return;
+        }
+        evaluationAudioPrimaryUrlRef.current = firstUrl;
+        const firstAudio = new Audio(firstUrl);
+        evaluationAudioRef.current = firstAudio;
+
+        const secondUrlPromise = rest ? requestSpeechUrl(rest) : Promise.resolve<string | null>(null);
+
+        firstAudio.onpause = () => {
+          if (sessionId === playbackSessionRef.current) setIsReadingEvaluation(false);
+        };
+        firstAudio.onerror = () => {
+          if (sessionId === playbackSessionRef.current) setIsReadingEvaluation(false);
+        };
+        firstAudio.onended = async () => {
+          try {
+            const secondUrl = await secondUrlPromise;
+            if (!secondUrl || sessionId !== playbackSessionRef.current) {
+              setIsReadingEvaluation(false);
+              return;
+            }
+
+            evaluationAudioSecondaryUrlRef.current = secondUrl;
+            const secondAudio = new Audio(secondUrl);
+            evaluationAudioRef.current = secondAudio;
+            secondAudio.onended = () => setIsReadingEvaluation(false);
+            secondAudio.onpause = () => setIsReadingEvaluation(false);
+            secondAudio.onerror = () => setIsReadingEvaluation(false);
+            await secondAudio.play();
+          } catch {
+            if (sessionId === playbackSessionRef.current) setIsReadingEvaluation(false);
+          }
+        };
+
+        await firstAudio.play();
+        setIsReadingEvaluation(true);
+      } catch (err) {
+        if (String(err).includes("AbortError")) return;
+        setIsReadingEvaluation(false);
+        console.error("[Speech] failed to play Smallest AI audio:", err);
+        toast({
+          title: "Speech playback failed",
+          description:
+            "Could not play Smallest AI audio. Check backend/.env SMALLEST_AI_API_KEY and SMALLEST_TTS_VOICE_ID.",
+          variant: "destructive",
+        });
+      }
+    })();
+  }, [finishSummary.hint, isEvaluatingPronunciation, isReadingEvaluation, stopEvaluationAudio, toast]);
+
   useEffect(() => {
     const speakPrompt = () => {
       if (hasSpokenPromptRef.current) return;
@@ -190,8 +419,9 @@ const Index = () => {
     return () => {
       window.clearTimeout(timer);
       window.removeEventListener("pointerdown", retryOnFirstInteraction);
+      stopEvaluationAudio();
     };
-  }, []);
+  }, [stopEvaluationAudio]);
 
   return (
     <div
@@ -281,7 +511,12 @@ const Index = () => {
 
       <Dialog
         open={isFinishDialogOpen}
-        onOpenChange={setIsFinishDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            stopEvaluationAudio();
+          }
+          setIsFinishDialogOpen(open);
+        }}
       >
         <DialogContent
           className={`max-w-md themed-textbox themed-result-dialog border-border bg-card/95 theme-${theme}`}
@@ -303,13 +538,24 @@ const Index = () => {
                 {finishSummary.score === null ? "--" : `${finishSummary.score.toFixed(1)}%`}
               </p>
             </div>
-            <div className="themed-result-card rounded-md border border-border/60 bg-background/60 p-3">
+            <div
+              className="themed-result-card rounded-md border border-border/60 bg-background/60 p-3 cursor-pointer"
+              title={isReadingEvaluation ? "Left click again to stop reading" : "Left click to read advice"}
+              onMouseDown={(event) => {
+                if (event.button !== 0) return;
+                speakEvaluation();
+              }}
+            >
               <p className="themed-kicker text-xs uppercase tracking-[0.16em] text-muted-foreground">
                 Advice
               </p>
-              <p className="mt-1 text-sm text-card-foreground">
-                {finishSummary.hint || "No advice available yet. Try another recording."}
-              </p>
+              <div className="mt-1 space-y-2 text-sm text-card-foreground">
+                {adviceSections.map((section, index) => (
+                  <p key={`${section.slice(0, 24)}-${index}`} className="leading-relaxed">
+                    {section}
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
         </DialogContent>
