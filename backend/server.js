@@ -260,6 +260,44 @@ function sanitizeSentenceBlock(input) {
     .trim();
 }
 
+function containsContraction(text) {
+  const s = String(text).toLowerCase();
+  return /\b(?:\w+n't|\w+'re|\w+'ve|\w+'ll|\w+'d|i'm|it's|that's|there's|here's|what's|who's|where's|when's|why's|how's|let's)\b/.test(
+    s
+  );
+}
+
+async function requestSentenceFromGroq(prompt, apiKey, model) {
+  const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.7,
+      max_tokens: 120,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You generate concise spoken-English practice content. Return only one sentence and do not use contractions.",
+        },
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
+
+  if (!groqRes.ok) {
+    return { ok: false, detail: await groqRes.text() };
+  }
+
+  const data = await groqRes.json();
+  const text = String(data?.choices?.[0]?.message?.content || "");
+  return { ok: true, text };
+}
+
 function loadEnvFile(filePath) {
   if (!fs.existsSync(filePath)) return;
   const content = fs.readFileSync(filePath, "utf8");

@@ -190,7 +190,20 @@ const Index = () => {
           includeCommonPronunciationPairs: true,
         }),
       });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        let detail = "";
+        try {
+          const errJson = await response.json();
+          detail = typeof errJson?.detail === "string"
+            ? errJson.detail
+            : typeof errJson?.error === "string"
+              ? errJson.error
+              : "";
+        } catch {
+          detail = "";
+        }
+        throw new Error(`HTTP ${response.status}${detail ? ` - ${detail}` : ""}`);
+      }
 
       const data = await response.json();
       const nextText = typeof data?.text === "string" ? data.text.trim() : "";
@@ -205,7 +218,7 @@ const Index = () => {
       console.error("[ReferenceText] generation failed", err);
       toast({
         title: "Generation failed",
-        description: "Using the default sentence. Check Groq key and function logs.",
+        description: `Using default sentence. Check backend at ${BACKEND_URL}.`,
         variant: "destructive",
       });
       setReferenceText(sampleText.trim());
