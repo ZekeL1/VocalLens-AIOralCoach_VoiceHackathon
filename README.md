@@ -1,73 +1,98 @@
-# Welcome to your Lovable project
+# VocalLens AI
 
-## Project info
+VocalLens AI is an AI-powered English speaking practice app.  
+It turns reading practice into a full feedback loop: live recognition, word-level confidence, post-session coaching, and spoken feedback playback.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## What We Built
 
-## How can I edit this code?
+This project delivers an end-to-end oral practice workflow:
 
-There are several ways of editing your application.
+- Real-time ASR transcription with per-word confidence visualization.
+- AI-generated reference sentences (Groq) for varied speaking practice.
+- Post-session pronunciation evaluation (Groq) with actionable advice.
+- Text-to-speech playback of feedback (Smallest AI), so learners can listen to coaching tips.
+- A frontend/backend split where secrets stay on the backend.
 
-**Use Lovable**
+## Why We Built It
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Many speaking tools only provide a final score.  
+We built VocalLens AI to answer a more useful question: **what exactly should the learner improve next?**
 
-Changes made via Lovable will be committed automatically to this repo.
+Key goals:
 
-**Use your preferred IDE**
+- Show weak spots at the word level, not only aggregate scores.
+- Keep practice fresh with dynamically generated prompts.
+- Convert evaluation into concrete drills and corrections.
+- Reduce friction by reading feedback aloud.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Core Features
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. **Reference Text Generation**
+- Clicking `Generate` calls `POST /api/generate-reference-text`.
+- Backend uses Groq to create one short practice sentence.
 
-Follow these steps:
+2. **Live Recording + ASR**
+- `useASR` handles microphone capture, websocket streaming, partial/final merge logic, and confidence alignment.
+- Pause/resume/stop edge cases are handled to reduce confidence instability near utterance boundaries.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. **Pronunciation Evaluation**
+- On `Finish`, frontend sends reference text, ASR transcript, confidence array, and score to `POST /api/evaluate-pronunciation`.
+- Backend returns structured feedback (assessment, issues, drills).
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+4. **Feedback Playback**
+- Frontend calls `POST /api/speak-feedback` to synthesize and play coaching audio.
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Tech Stack
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+- Frontend: `React + Vite + TypeScript + Tailwind + shadcn/ui`
+- Backend: `Node.js + Express` (`backend/server.js`)
+- LLM: `Groq`
+- ASR/TTS: `Smallest AI`
+- Supabase: token helper function for ASR key access
+
+
+
+## How To Run Locally
+
+# NOTE: add your own api keys and models into your own local environment
+
+1. Install frontend dependencies:
+
+```bash
+npm install
+```
+
+2. Install and start backend:
+
+```bash
+cd backend
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+3. Start frontend in another terminal (from repo root):
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm run dev
+```
 
-**Use GitHub Codespaces**
+4. Verify backend health:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+curl http://localhost:3001/health
+```
 
-## What technologies are used for this project?
+Expected response:
 
-This project is built with:
+```json
+{"ok":true}
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Troubleshooting
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- `Generate` shows `Failed to fetch`:
+  backend is not running or `VITE_BACKEND_URL` is wrong.
+- `502` from backend:
+  check `GROQ_API_KEY`, model name, and backend logs.
+- ASR websocket issues in dev:
+  verify root `.env` contains `SMALLEST_AI_API_KEY` and Supabase token function is configured.
